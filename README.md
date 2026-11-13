@@ -15,8 +15,6 @@ The project is intentionally small and runs entirely in the browser. It is a fro
 - Checkout review screen
 - Delivery address form
 - Indian Rupee (INR) price formatting
-- Responsive layout for desktop, tablet, and mobile screens
-- Keyboard-friendly product cards and Escape-to-close dialogs
 
 ## Tech stack
 
