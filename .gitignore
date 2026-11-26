@@ -1,0 +1,45 @@
+# ==========================================
+# Environment & Database Credentials
+# ==========================================
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# Database Dumps, Backups & Local Data Files
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+*.sql.gz
+*.sql.zip
+*dump*.sql
+*backup*.sql
+backups/
+db_backup/
+
+# ==========================================
+# Dependencies & Build Outputs
+# ==========================================
+node_modules/
+dist/
+build/
+.vite/
+
+# ==========================================
+# Logs & Runtime
+# ==========================================
+logs/
+*.log
+npm-debug.log*
+.eslintcache
+
+# ==========================================
+# OS & Editor Files
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
