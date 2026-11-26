@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { formatINR } from '../utils/format';
+import { formatINR } from '../../utils/format';
 
 const STATUS_LABELS = {
     pending: 'Pending Approval',

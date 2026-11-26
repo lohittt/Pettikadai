@@ -1,4 +1,4 @@
-import { formatINR } from '../utils/format';
+import { formatINR } from '../../utils/format';
 
 export function Wishlist({ wishlist, productMap, isOpen, onClose, onRemove }) {
     const items = wishlist.map((id) => productMap.get(id)).filter(Boolean);

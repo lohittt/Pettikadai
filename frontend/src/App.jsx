@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
-import { Product } from './components/Product';
-import { Cart } from './components/Cart';
-import { Wishlist } from './components/Wishlist';
-import { WishlistPage } from './components/WishlistPage';
-import { CheckoutPage } from './components/CheckoutPage';
-import { Orders } from './components/Orders';
+import { Product } from './components/user/Product';
+import { Cart } from './components/user/Cart';
+import { Wishlist } from './components/user/Wishlist';
+import { WishlistPage } from './components/user/WishlistPage';
+import { CheckoutPage } from './components/user/CheckoutPage';
+import { Orders } from './components/user/Orders';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { ProtectedRoute } from './components/ProtectedRoute';

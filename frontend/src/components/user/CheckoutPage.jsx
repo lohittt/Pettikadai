@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { formatINR } from '../utils/format';
-import { validateAddress, sanitizeInput } from '../services/validation';
+import { formatINR } from '../../utils/format';
+import { validateAddress, sanitizeInput } from '../../services/validation';
 
 export function CheckoutPage({
     cart,

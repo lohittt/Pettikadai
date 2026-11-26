@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { formatINR } from '../utils/format';
+import { formatINR } from '../../utils/format';
 
 export function WishlistPage({ wishlist, productMap, onRemove, onAddToCart }) {
     const items = wishlist.map((id) => productMap.get(id)).filter(Boolean);

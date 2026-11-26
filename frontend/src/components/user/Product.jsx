@@ -1,5 +1,5 @@
-import { CATEGORIES } from '../hooks/useProducts';
-import { formatINR } from '../utils/format';
+import { CATEGORIES } from '../../hooks/useProducts';
+import { formatINR } from '../../utils/format';
 
 export function Product({
     products,

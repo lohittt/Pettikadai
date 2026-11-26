@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MAX_QTY, formatINR } from '../utils/format';
+import { MAX_QTY, formatINR } from '../../utils/format';
 
 export function Cart({
     cart,
