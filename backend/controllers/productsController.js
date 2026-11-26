@@ -1,4 +1,16 @@
 const db = require('../db/connection');
+const crypto = require('crypto');
+const { validateProduct } = require('../services/validationService');
+
+function generateProductId(name) {
+    const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60) || 'product';
+    const suffix = crypto.randomBytes(3).toString('hex');
+    return `${slug}-${suffix}`;
+}
 
 /**
  * List all products with optional category, search, and sort filters.
@@ -73,7 +85,91 @@ async function getProductById(req, res) {
     }
 }
 
-module.exports = {
-    getProducts,
-    getProductById
-};
+/**
+ * POST /api/products — Create a new product (admin only).
+ */
+async function createProduct(req, res) {
+    try {
+        const result = validateProduct(req.body);
+        if (!result.valid) {
+            return res.status(400).json({ success: false, errors: result.errors });
+        }
+
+        const { name, brand, category_id, price, image_url, description } = result.value;
+
+        const [cat] = await db.query('SELECT id FROM categories WHERE id = ?', [category_id]);
+        if (cat.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid category_id' });
+        }
+
+        const product_id = generateProductId(name);
+
+        await db.query(
+            `INSERT INTO products (product_id, name, brand, category_id, price, image_url, description)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [product_id, name, brand, category_id, price, image_url, description]
+        );
+
+        res.status(201).json({ success: true, message: 'Product created', product_id });
+    } catch (err) {
+        console.error('POST /api/products error:', err);
+        res.status(500).json({ success: false, error: 'Failed to create product' });
+    }
+}
+
+/**
+ * PUT /api/products/:productId — Update a product (admin only).
+ */
+async function updateProduct(req, res) {
+    try {
+        const result = validateProduct(req.body);
+        if (!result.valid) {
+            return res.status(400).json({ success: false, errors: result.errors });
+        }
+
+        const { name, brand, category_id, price, image_url, description } = result.value;
+
+        const [cat] = await db.query('SELECT id FROM categories WHERE id = ?', [category_id]);
+        if (cat.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid category_id' });
+        }
+
+        const [updateResult] = await db.query(
+            `UPDATE products SET name = ?, brand = ?, category_id = ?, price = ?, image_url = ?, description = ?
+             WHERE product_id = ?`,
+            [name, brand, category_id, price, image_url, description, req.params.productId]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Product not found' });
+        }
+
+        res.json({ success: true, message: 'Product updated' });
+    } catch (err) {
+        console.error('PUT /api/products error:', err);
+        res.status(500).json({ success: false, error: 'Failed to update product' });
+    }
+}
+
+/**
+ * DELETE /api/products/:productId — Delete a product (admin only).
+ */
+async function deleteProduct(req, res) {
+    try {
+        const [result] = await db.query(
+            'DELETE FROM products WHERE product_id = ?',
+            [req.params.productId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Product not found' });
+        }
+
+        res.json({ success: true, message: 'Product deleted' });
+    } catch (err) {
+        console.error('DELETE /api/products error:', err);
+        res.status(500).json({ success: false, error: 'Failed to delete product' });
+    }
+}
+
+module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct };

@@ -1,60 +1,104 @@
 import { useState, useEffect, useCallback } from 'react';
-import { formatINR, readStorage, saveStorage } from '../utils/format';
+import { formatINR, STORAGE_KEYS } from '../utils/format';
+import { validateAddress as validateAddressService, sanitizeInput } from '../services/validation';
 
-export function useCheckout({ cart, cartCount, cartTotal, clearCart, placeOrder, notify }) {
-    const [address, setAddress] = useState(() => readStorage('address', ''));
+function getAddressKey(userId) {
+    return `${STORAGE_KEYS.address}_${userId}`;
+}
+
+function readUserAddress(userId) {
+    if (!userId) return '';
+    try {
+        const raw = localStorage.getItem(getAddressKey(userId));
+        return raw ? JSON.parse(raw) : '';
+    } catch {
+        return '';
+    }
+}
+
+function saveUserAddress(userId, value) {
+    if (!userId) return;
+    try {
+        localStorage.setItem(getAddressKey(userId), JSON.stringify(value));
+    } catch {
+        // Storage is optional; the current session still works.
+    }
+}
+
+export function useCheckout({ cart, cartCount, cartTotal, clearCart, placeOrder, notify, isAuthenticated, userId }) {
+    const [address, setAddress] = useState(() => readUserAddress(userId));
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [isAddressOpen, setIsAddressOpen] = useState(false);
 
+    // Reset or reload address whenever the authenticated user changes (new registration, login switch, or logout)
     useEffect(() => {
-        saveStorage('address', address);
-    }, [address]);
+        if (!userId || !isAuthenticated) {
+            setAddress('');
+            setIsCheckoutOpen(false);
+            setIsAddressOpen(false);
+            return;
+        }
+        setAddress(readUserAddress(userId));
+    }, [userId, isAuthenticated]);
 
     const openCheckout = useCallback(() => {
+        if (!isAuthenticated) {
+            if (notify) notify('Please login to proceed to checkout');
+            return;
+        }
         if (!cartCount) return;
         setIsCheckoutOpen(true);
-    }, [cartCount]);
+    }, [cartCount, isAuthenticated, notify]);
 
     const closeCheckout = useCallback(() => setIsCheckoutOpen(false), []);
     const openAddressModal = useCallback(() => setIsAddressOpen(true), []);
     const closeAddressModal = useCallback(() => setIsAddressOpen(false), []);
 
     const validateAddress = useCallback((value) => {
-        const trimmed = value.trim();
-        if (!trimmed) return 'Please enter your shipping address.';
-        if (trimmed.length < 5) return 'Address must contain at least 5 characters.';
-        if (trimmed.length > 200) return 'Address cannot exceed 200 characters.';
-        return '';
+        return validateAddressService(value);
     }, []);
 
-    const saveAddress = useCallback((value) => {
-        setAddress(value.trim());
-        setIsAddressOpen(false);
-    }, []);
+    const saveAddress = useCallback(
+        (value) => {
+            const clean = sanitizeInput(value);
+            setAddress(clean);
+            saveUserAddress(userId, clean);
+            setIsAddressOpen(false);
+        },
+        [userId]
+    );
 
     const handlePlaceOrder = useCallback(async () => {
-        if (!cartCount) return;
-        if (!address || address.trim().length < 5) {
-            alert('Please add a delivery address before placing the order.');
-            setIsAddressOpen(true);
-            return;
+        if (!isAuthenticated) {
+            if (notify) notify('Please login to place an order');
+            return false;
         }
-        if (!window.confirm(`Place order for ${formatINR(cartTotal)}?`)) return;
+        if (!cartCount) return false;
+        const addrError = validateAddressService(address);
+        if (addrError) {
+            alert(addrError);
+            setIsAddressOpen(true);
+            return false;
+        }
+        if (!window.confirm(`Place order for ${formatINR(cartTotal)}?`)) return false;
 
         try {
-            const result = await placeOrder(address, cart);
+            const result = await placeOrder(sanitizeInput(address), cart);
             if (result.success) {
                 if (notify) notify(`Order ${result.order.orderId} placed successfully! ✓`);
                 clearCart();
                 setIsCheckoutOpen(false);
+                return true;
             } else {
                 alert('Order failed: ' + (result.error || 'Unknown error'));
+                return false;
             }
         } catch (err) {
             alert('Could not reach server. Order not saved.');
             console.error('Order network error:', err);
+            return false;
         }
-    }, [cart, cartCount, cartTotal, address, placeOrder, clearCart, notify]);
+    }, [cart, cartCount, cartTotal, address, placeOrder, clearCart, notify, isAuthenticated]);
 
     return {
         address,

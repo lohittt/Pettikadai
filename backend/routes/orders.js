@@ -1,18 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const {
-    placeOrder,
-    getOrdersBySession,
-    getOrderById
-} = require('../controllers/ordersController');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { placeOrder, getOrders, getOrderById } = require('../controllers/ordersController');
 
-// POST /api/orders — Place a new order
+// Orders endpoints are strictly for customer ('user') accounts (admins use /api/admin/orders)
+router.use(requireAuth, requireRole('user'));
+
 router.post('/', placeOrder);
-
-// GET /api/orders/detail/:orderId — Get single order details
+router.get('/', getOrders);
 router.get('/detail/:orderId', getOrderById);
-
-// GET /api/orders/:sessionId — Get all orders for a session
-router.get('/:sessionId', getOrdersBySession);
 
 module.exports = router;

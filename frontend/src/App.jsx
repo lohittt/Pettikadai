@@ -1,9 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Product } from './components/Product';
 import { Cart } from './components/Cart';
 import { Wishlist } from './components/Wishlist';
+import { WishlistPage } from './components/WishlistPage';
+import { CheckoutPage } from './components/CheckoutPage';
+import { Orders } from './components/Orders';
+import { Login } from './components/Login';
+import { Register } from './components/Register';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProductManager } from './components/admin/ProductManager';
+import { UserMonitor } from './components/admin/UserMonitor';
+import { OrderApproval } from './components/admin/OrderApproval';
 import { Notification } from './components/Notification';
+import { useAuth } from './hooks/useAuth';
 import { useProducts } from './hooks/useProducts';
 import { useCart } from './hooks/useCart';
 import { useWishlist } from './hooks/useWishlist';
@@ -22,7 +33,11 @@ export default function App() {
         }, 2800);
     }, []);
 
+    const { user, isAuthenticated, isAdmin } = useAuth();
+    const canShop = isAuthenticated && !isAdmin;
+
     const {
+        products,
         productMap,
         filteredProducts,
         search,
@@ -32,7 +47,8 @@ export default function App() {
         sort,
         setSort,
         selectedProduct,
-        setSelectedProduct
+        setSelectedProduct,
+        refreshProducts
     } = useProducts();
 
     const {
@@ -43,7 +59,7 @@ export default function App() {
         updateQuantity,
         removeFromCart,
         clearCart
-    } = useCart(productMap, notify);
+    } = useCart(productMap, notify, canShop);
 
     const {
         wishlist,
@@ -52,9 +68,9 @@ export default function App() {
         closeWishlist,
         toggleWishlist,
         isWishlisted
-    } = useWishlist(productMap);
+    } = useWishlist(notify, canShop);
 
-    const { isPlacing, placeOrder } = useOrders();
+    const { orders, loading: ordersLoading, isPlacing, placeOrder, fetchOrders } = useOrders();
 
     const {
         address,
@@ -73,7 +89,9 @@ export default function App() {
         cartTotal,
         clearCart,
         placeOrder,
-        notify
+        notify,
+        isAuthenticated: canShop,
+        userId: user?.id ?? null
     });
 
     const hasOpenModal = isWishlistOpen || Boolean(selectedProduct) || isCheckoutOpen || isAddressOpen;
@@ -98,18 +116,10 @@ export default function App() {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [closeWishlist, setSelectedProduct, closeCheckout, closeAddressModal]);
 
-    return (
+    const StorefrontView = isAdmin ? (
+        <Navigate to="/admin/products" replace />
+    ) : (
         <>
-            <Navbar wishlistCount={wishlist.length} onOpenWishlist={openWishlist} />
-
-            <Wishlist
-                wishlist={wishlist}
-                productMap={productMap}
-                isOpen={isWishlistOpen}
-                onClose={closeWishlist}
-                onRemove={toggleWishlist}
-            />
-
             <section className="hero" id="home">
                 <div className="container hero-content">
                     <div className="hero-text">
@@ -195,6 +205,111 @@ export default function App() {
                 onPlaceOrder={handlePlaceOrder}
                 isPlacing={isPlacing}
             />
+        </>
+    );
+
+    return (
+        <>
+            <Navbar
+                wishlistCount={wishlist.length}
+                cartCount={cartCount}
+                onOpenWishlist={openWishlist}
+                notify={notify}
+            />
+
+            {!isAdmin && (
+                <Wishlist
+                    wishlist={wishlist}
+                    productMap={productMap}
+                    isOpen={isWishlistOpen}
+                    onClose={closeWishlist}
+                    onRemove={toggleWishlist}
+                />
+            )}
+
+            <main>
+                <Routes>
+                    <Route path="/" element={StorefrontView} />
+                    <Route path="/login" element={<Login notify={notify} />} />
+                    <Route path="/register" element={<Register notify={notify} />} />
+
+                    {/* Customer-only routes */}
+                    <Route
+                        path="/wishlist"
+                        element={
+                            <ProtectedRoute requiredRole="user">
+                                <WishlistPage
+                                    wishlist={wishlist}
+                                    productMap={productMap}
+                                    onRemove={toggleWishlist}
+                                    onAddToCart={addToCart}
+                                />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/checkout"
+                        element={
+                            <ProtectedRoute requiredRole="user">
+                                <CheckoutPage
+                                    cart={cart}
+                                    productMap={productMap}
+                                    cartTotal={cartTotal}
+                                    address={address}
+                                    onSaveAddress={saveAddress}
+                                    placeOrder={placeOrder}
+                                    clearCart={clearCart}
+                                    isPlacing={isPlacing}
+                                    notify={notify}
+                                />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/orders"
+                        element={
+                            <ProtectedRoute requiredRole="user">
+                                <Orders
+                                    orders={orders}
+                                    loading={ordersLoading}
+                                    fetchOrders={fetchOrders}
+                                />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Admin-only routes (Products, Users, Orders) */}
+                    <Route path="/admin" element={<Navigate to="/admin/products" replace />} />
+                    <Route
+                        path="/admin/products"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <ProductManager
+                                    products={products}
+                                    refreshProducts={refreshProducts}
+                                    notify={notify}
+                                />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/users"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <UserMonitor />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/orders"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <OrderApproval notify={notify} />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Routes>
+            </main>
 
             <Notification message={notification} />
 
@@ -206,9 +321,19 @@ export default function App() {
                     </div>
                     <div>
                         <h3>Quick Links</h3>
-                        <a href="#home">Home</a>
-                        <a href="#products">Products</a>
-                        <a href="#about">About Us</a>
+                        {isAdmin ? (
+                            <>
+                                <a href="/admin/products">Products</a>
+                                <a href="/admin/users">Users</a>
+                                <a href="/admin/orders">Orders</a>
+                            </>
+                        ) : (
+                            <>
+                                <a href="/#home">Home</a>
+                                <a href="/#products">Products</a>
+                                <a href="/#about">About Us</a>
+                            </>
+                        )}
                     </div>
                     <div>
                         <h3>Contact</h3>

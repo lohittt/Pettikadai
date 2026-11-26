@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { getProducts, getProductById } = require('../controllers/productsController');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { getProducts, getProductById, createProduct, updateProduct, deleteProduct } = require('../controllers/productsController');
 
-// GET /api/products — List all products (with optional filters)
-// Query params: ?category=Electronics&search=nike&sort=low-high
+// Public routes
 router.get('/', getProducts);
-
-// GET /api/products/:productId — Get single product details
 router.get('/:productId', getProductById);
+
+// Admin-only routes
+router.post('/', requireAuth, requireRole('admin'), createProduct);
+router.put('/:productId', requireAuth, requireRole('admin'), updateProduct);
+router.delete('/:productId', requireAuth, requireRole('admin'), deleteProduct);
 
 module.exports = router;

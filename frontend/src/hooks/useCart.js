@@ -1,27 +1,37 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { MAX_QTY, readStorage, saveStorage } from '../utils/format';
+import { MAX_QTY } from '../utils/format';
 import { PettikadaiAPI } from '../api/pettikadaiApi';
 
-function sanitizeCart(raw, productMap) {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-    return Object.fromEntries(
-        Object.entries(raw)
-            .map(([id, qty]) => [id, Math.max(0, Math.min(MAX_QTY, Number(qty) || 0))])
-            .filter(([id, qty]) => productMap.has(id) && qty > 0)
-    );
-}
+export function useCart(productMap, notify, isAuthenticated) {
+    const [cart, setCart] = useState({});
 
-export function useCart(productMap, notify) {
-    const [cart, setCart] = useState(() => sanitizeCart(readStorage('cart', {}), productMap));
+    const refreshCart = useCallback(async () => {
+        if (!isAuthenticated) {
+            setCart({});
+            return;
+        }
+        const res = await PettikadaiAPI.getCart();
+        if (res?.success && Array.isArray(res.cart)) {
+            const next = {};
+            for (const item of res.cart) {
+                next[item.product_id] = Math.max(1, Math.min(MAX_QTY, Number(item.quantity) || 1));
+            }
+            setCart(next);
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
-        saveStorage('cart', cart);
-    }, [cart]);
+        refreshCart();
+    }, [refreshCart]);
 
     const addToCart = useCallback(
-        (id, quantity = 1) => {
+        async (id, quantity = 1) => {
+            if (!isAuthenticated) {
+                if (notify) notify('Please login to add items to your cart');
+                return false;
+            }
             const product = productMap.get(id);
-            if (!product) return;
+            if (!product) return false;
 
             setCart((prev) => {
                 const next = Math.min((prev[id] || 0) + quantity, MAX_QTY);
@@ -29,24 +39,37 @@ export function useCart(productMap, notify) {
             });
 
             if (notify) notify(`${product.name} added to cart ✓`);
-            PettikadaiAPI.addToCart(id, quantity).catch(console.error);
+            const res = await PettikadaiAPI.addToCart(id, quantity);
+            if (!res?.success) {
+                refreshCart();
+                return false;
+            }
+            return true;
         },
-        [productMap, notify]
+        [productMap, notify, isAuthenticated, refreshCart]
     );
 
-    const updateQuantity = useCallback((id, value) => {
-        const quantity = Math.max(1, Math.min(MAX_QTY, Math.floor(value) || 1));
-        setCart((prev) => ({ ...prev, [id]: quantity }));
-        PettikadaiAPI.updateCartQty(id, quantity).catch(console.error);
-    }, []);
+    const updateQuantity = useCallback(
+        async (id, value) => {
+            if (!isAuthenticated) return;
+            const quantity = Math.max(1, Math.min(MAX_QTY, Math.floor(value) || 1));
+            setCart((prev) => ({ ...prev, [id]: quantity }));
+            await PettikadaiAPI.updateCartQty(id, quantity);
+        },
+        [isAuthenticated]
+    );
 
-    const removeFromCart = useCallback((id) => {
-        setCart((prev) => {
-            const { [id]: _, ...remaining } = prev;
-            return remaining;
-        });
-        PettikadaiAPI.removeFromCart(id).catch(console.error);
-    }, []);
+    const removeFromCart = useCallback(
+        async (id) => {
+            if (!isAuthenticated) return;
+            setCart((prev) => {
+                const { [id]: _, ...remaining } = prev;
+                return remaining;
+            });
+            await PettikadaiAPI.removeFromCart(id);
+        },
+        [isAuthenticated]
+    );
 
     const clearCart = useCallback(() => {
         setCart({});
@@ -73,6 +96,7 @@ export function useCart(productMap, notify) {
         addToCart,
         updateQuantity,
         removeFromCart,
-        clearCart
+        clearCart,
+        refreshCart
     };
 }

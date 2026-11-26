@@ -1,26 +1,43 @@
 import { useState, useEffect, useCallback } from 'react';
-import { readStorage, saveStorage } from '../utils/format';
 import { PettikadaiAPI } from '../api/pettikadaiApi';
 
-function sanitizeWishlist(raw, productMap) {
-    if (!Array.isArray(raw)) return [];
-    return [...new Set(raw.filter((id) => productMap.has(id)))];
-}
-
-export function useWishlist(productMap) {
-    const [wishlist, setWishlist] = useState(() => sanitizeWishlist(readStorage('wishlist', []), productMap));
+export function useWishlist(notify, isAuthenticated) {
+    const [wishlist, setWishlist] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
 
-    useEffect(() => {
-        saveStorage('wishlist', wishlist);
-    }, [wishlist]);
+    const refreshWishlist = useCallback(async () => {
+        if (!isAuthenticated) {
+            setWishlist([]);
+            return;
+        }
+        const res = await PettikadaiAPI.getWishlist();
+        if (res?.success && Array.isArray(res.wishlist)) {
+            setWishlist(res.wishlist.map((item) => item.product_id));
+        }
+    }, [isAuthenticated]);
 
-    const toggleWishlist = useCallback((id) => {
-        setWishlist((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-        );
-        PettikadaiAPI.toggleWishlist(id).catch(console.error);
-    }, []);
+    useEffect(() => {
+        refreshWishlist();
+    }, [refreshWishlist]);
+
+    const toggleWishlist = useCallback(
+        async (id) => {
+            if (!isAuthenticated) {
+                if (notify) notify('Please login to save items to your wishlist');
+                return;
+            }
+            setWishlist((prev) =>
+                prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+            );
+            const res = await PettikadaiAPI.toggleWishlist(id);
+            if (res?.success && notify) {
+                notify(res.message);
+            } else if (!res?.success) {
+                refreshWishlist();
+            }
+        },
+        [isAuthenticated, notify, refreshWishlist]
+    );
 
     const isWishlisted = useCallback((id) => wishlist.includes(id), [wishlist]);
 
@@ -30,6 +47,7 @@ export function useWishlist(productMap) {
         openWishlist: () => setIsOpen(true),
         closeWishlist: () => setIsOpen(false),
         toggleWishlist,
-        isWishlisted
+        isWishlisted,
+        refreshWishlist
     };
 }

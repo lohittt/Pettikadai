@@ -3,6 +3,7 @@ import { PettikadaiAPI } from '../api/pettikadaiApi';
 
 export function useOrders() {
     const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [isPlacing, setIsPlacing] = useState(false);
 
     const placeOrder = useCallback(async (address, cart) => {
@@ -24,15 +25,21 @@ export function useOrders() {
     }, []);
 
     const fetchOrders = useCallback(async () => {
-        const result = await PettikadaiAPI.getOrders();
-        if (result.success && Array.isArray(result.orders)) {
-            setOrders(result.orders);
+        setLoading(true);
+        try {
+            const result = await PettikadaiAPI.getOrders();
+            if (result.success && Array.isArray(result.orders)) {
+                setOrders(result.orders);
+            }
+            return result;
+        } finally {
+            setLoading(false);
         }
-        return result;
     }, []);
 
     return {
         orders,
+        loading,
         isPlacing,
         placeOrder,
         fetchOrders

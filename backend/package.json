@@ -8,14 +8,26 @@
     "dev": "nodemon server.js",
     "seed": "node db/seed.js"
   },
-  "keywords": ["ecommerce", "pettikadai", "api"],
+  "keywords": [
+    "ecommerce",
+    "pettikadai",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
-    "mysql2": "^3.11.5"
+    "express-mysql-session": "^3.0.3",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.3.0",
+    "mysql2": "^3.11.5",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

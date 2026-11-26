@@ -1,7 +1,7 @@
 const db = require('../db/connection');
 
 /**
- * Get all wishlist items for a session.
+ * Get all wishlist items for the authenticated user.
  */
 async function getWishlist(req, res) {
     try {
@@ -11,9 +11,9 @@ async function getWishlist(req, res) {
              FROM wishlist w
              JOIN products p ON w.product_id = p.product_id
              JOIN categories cat ON p.category_id = cat.id
-             WHERE w.session_id = ?
+             WHERE w.user_id = ?
              ORDER BY w.created_at DESC`,
-            [req.params.sessionId]
+            [req.user.id]
         );
 
         res.json({ success: true, count: rows.length, wishlist: rows });
@@ -28,10 +28,10 @@ async function getWishlist(req, res) {
  */
 async function toggleWishlist(req, res) {
     try {
-        const { sessionId, productId } = req.body;
+        const { productId } = req.body;
 
-        if (!sessionId || !productId) {
-            return res.status(400).json({ success: false, error: 'sessionId and productId are required' });
+        if (!productId) {
+            return res.status(400).json({ success: false, error: 'productId is required' });
         }
 
         const [product] = await db.query('SELECT product_id, name FROM products WHERE product_id = ?', [productId]);
@@ -40,18 +40,18 @@ async function toggleWishlist(req, res) {
         }
 
         const [existing] = await db.query(
-            'SELECT id FROM wishlist WHERE session_id = ? AND product_id = ?',
-            [sessionId, productId]
+            'SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?',
+            [req.user.id, productId]
         );
 
         if (existing.length > 0) {
-            await db.query('DELETE FROM wishlist WHERE session_id = ? AND product_id = ?', [sessionId, productId]);
+            await db.query('DELETE FROM wishlist WHERE user_id = ? AND product_id = ?', [req.user.id, productId]);
             return res.json({ success: true, action: 'removed', message: `${product[0].name} removed from wishlist` });
         }
 
         await db.query(
-            'INSERT INTO wishlist (session_id, product_id) VALUES (?, ?)',
-            [sessionId, productId]
+            'INSERT INTO wishlist (user_id, product_id) VALUES (?, ?)',
+            [req.user.id, productId]
         );
         res.status(201).json({ success: true, action: 'added', message: `${product[0].name} added to wishlist` });
     } catch (err) {
@@ -65,11 +65,11 @@ async function toggleWishlist(req, res) {
  */
 async function removeFromWishlist(req, res) {
     try {
-        const { sessionId, productId } = req.params;
+        const { productId } = req.params;
 
         const [result] = await db.query(
-            'DELETE FROM wishlist WHERE session_id = ? AND product_id = ?',
-            [sessionId, productId]
+            'DELETE FROM wishlist WHERE user_id = ? AND product_id = ?',
+            [req.user.id, productId]
         );
 
         if (result.affectedRows === 0) {
@@ -83,8 +83,4 @@ async function removeFromWishlist(req, res) {
     }
 }
 
-module.exports = {
-    getWishlist,
-    toggleWishlist,
-    removeFromWishlist
-};
+module.exports = { getWishlist, toggleWishlist, removeFromWishlist };

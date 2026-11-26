@@ -1,18 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const {
-    getWishlist,
-    toggleWishlist,
-    removeFromWishlist
-} = require('../controllers/wishlistController');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { getWishlist, toggleWishlist, removeFromWishlist } = require('../controllers/wishlistController');
 
-// GET /api/wishlist/:sessionId — Get wishlist items
-router.get('/:sessionId', getWishlist);
+// Wishlist is strictly for customer ('user') accounts
+router.use(requireAuth, requireRole('user'));
 
-// POST /api/wishlist — Toggle product in wishlist
+router.get('/', getWishlist);
 router.post('/', toggleWishlist);
-
-// DELETE /api/wishlist/:sessionId/:productId — Remove specific item
-router.delete('/:sessionId/:productId', removeFromWishlist);
+router.delete('/:productId', removeFromWishlist);
 
 module.exports = router;
