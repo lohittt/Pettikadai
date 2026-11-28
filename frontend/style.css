@@ -2,23 +2,34 @@
 
 :root {
     --radius: 0.75rem;
-    --background: #FDF6E3;          /* Warm Cream */
-    --foreground: #3B2314;          /* Teak Brown */
-    --card: #FFFDF7;                /* Warm Ivory */
+    --background: #FDF6E3;
+    /* Warm Cream */
+    --foreground: #3B2314;
+    /* Teak Brown */
+    --card: #FFFDF7;
+    /* Warm Ivory */
     --card-foreground: #3B2314;
     --popover: #FFFDF7;
     --popover-foreground: #3B2314;
-    --primary: #3B2314;             /* Teak CTA */
-    --primary-foreground: #FDF6E3;  /* Cream text */
-    --secondary: #2E6B3A;           /* Banana-leaf Green */
+    --primary: #3B2314;
+    /* Teak CTA */
+    --primary-foreground: #FDF6E3;
+    /* Cream text */
+    --secondary: #2E6B3A;
+    /* Banana-leaf Green */
     --secondary-foreground: #FFFFFF;
-    --muted: #F3E7CE;               /* Warm Sand */
-    --muted-foreground: #6A5C4A;    /* Muted Brown */
-    --accent: #E8A317;              /* Turmeric Saffron */
+    --muted: #F3E7CE;
+    /* Warm Sand */
+    --muted-foreground: #6A5C4A;
+    /* Muted Brown */
+    --accent: #E8A317;
+    /* Turmeric Saffron */
     --accent-foreground: #281900;
-    --destructive: #B3261E;         /* Kumkum Red */
+    --destructive: #B3261E;
+    /* Kumkum Red */
     --destructive-foreground: #FFFFFF;
-    --border: #E6D5B8;              /* Soft Sandalwood */
+    --border: #E6D5B8;
+    /* Soft Sandalwood */
     --input: #E6D5B8;
     --ring: #E8A317;
 
@@ -84,7 +95,8 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    h1, h2 {
+    h1,
+    h2 {
         font-family: var(--font-headline);
     }
 

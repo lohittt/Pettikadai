@@ -64,8 +64,8 @@ async function getProducts(req, res) {
                 break;
             default:
                 sql += featured === 'true'
-                    ? ' ORDER BY p.updated_at DESC, p.id ASC'
-                    : ' ORDER BY p.id ASC';
+                    ? ' ORDER BY p.updated_at DESC, p.id DESC'
+                    : ' ORDER BY p.id DESC';
         }
 
         const [rows] = await db.query(sql, params);

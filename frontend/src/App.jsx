@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Truck, ShieldCheck, RotateCcw, ArrowRight, ShoppingBag, Smartphone, Shirt, Watch } from 'lucide-react';
+import { Truck, ShieldCheck, RotateCcw, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,13 +27,6 @@ import { useCart } from './hooks/useCart';
 import { useWishlist } from './hooks/useWishlist';
 import { useOrders } from './hooks/useOrders';
 import { useCheckout } from './hooks/useCheckout';
-
-const CATEGORY_TILES = [
-    { key: 'All', label: 'All Products', icon: ShoppingBag, tone: 'bg-primary-soft text-on-primary-soft' },
-    { key: 'Electronics', label: 'Electronics', icon: Smartphone, tone: 'bg-secondary-soft text-secondary' },
-    { key: 'Fashion', label: 'Fashion', icon: Shirt, tone: 'bg-accent-soft text-destructive' },
-    { key: 'Accessories', label: 'Accessories', icon: Watch, tone: 'bg-primary-soft text-on-primary-soft' }
-];
 
 export default function App() {
     const notify = useCallback((message) => {
@@ -211,41 +204,6 @@ export default function App() {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
-            </section>
-
-            {/* Shop by Category */}
-            <section id="categories" className="container py-10">
-                <div className="mb-6 flex items-end justify-between gap-4">
-                    <div>
-                        <h2 className="font-headline text-3xl font-bold text-foreground">Shop by Category</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Everyday favourites stocked fresh from our counter
-                        </p>
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    {CATEGORY_TILES.map((tile) => {
-                        const Icon = tile.icon;
-                        const active = category === tile.key;
-                        return (
-                            <Link
-                                key={tile.key}
-                                to="/#products"
-                                onClick={() => setCategory(tile.key)}
-                                className={`flex flex-col items-center justify-center gap-2.5 rounded-xl border p-5 text-center transition-colors duration-150 ${
-                                    active
-                                        ? 'border-primary bg-surface-container shadow-xs'
-                                        : 'border-border bg-card hover:bg-surface-container'
-                                }`}
-                            >
-                                <div className={`flex size-12 items-center justify-center rounded-full ${tile.tone}`}>
-                                    <Icon className="size-5" />
-                                </div>
-                                <span className="text-sm font-semibold text-foreground">{tile.label}</span>
-                            </Link>
-                        );
-                    })}
                 </div>
             </section>
 
@@ -448,9 +406,9 @@ export default function App() {
                                 />
                             </Link>
                             <p className="text-xs leading-relaxed text-muted-foreground">
-                                12, Bazaar Street, Mylapore, Chennai 600004
+                                12, Bazaar Street.
                                 <br />
-                                +91 98400 12345 · hello@pettikadai.in
+                                +91 98400 12345 · hello@pettikadai.in   
                             </p>
                         </div>
 

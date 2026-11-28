@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { CATEGORIES } from '../../hooks/useProducts';
 import { formatINR } from '../../utils/format';
 import { ProductCard } from './ProductCard';
@@ -19,6 +20,17 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/components/ui/dialog';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious
+} from '@/components/ui/pagination';
+
+const ITEMS_PER_PAGE = 8; // 2 rows × 4 columns
 
 const SORT_LABELS = {
     default: 'Sort By',
@@ -26,6 +38,22 @@ const SORT_LABELS = {
     'high-low': 'Price: High to Low',
     name: 'Name: A to Z'
 };
+
+function getPageNumbers(current, total) {
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const pages = new Set([1, total, current - 1, current, current + 1]);
+    const sorted = [...pages].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+    const result = [];
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i] - sorted[i - 1] > 1) {
+            result.push('ellipsis');
+        }
+        result.push(sorted[i]);
+    }
+    return result;
+}
 
 export function Product({
     products,
@@ -41,6 +69,29 @@ export function Product({
     onToggleWishlist,
     isWishlisted
 }) {
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search, category, sort]);
+
+    const totalPages = Math.max(1, Math.ceil(products.length / ITEMS_PER_PAGE));
+    const safePage = Math.min(currentPage, totalPages);
+
+    const paginatedProducts = useMemo(() => {
+        const start = (safePage - 1) * ITEMS_PER_PAGE;
+        return products.slice(start, start + ITEMS_PER_PAGE);
+    }, [products, safePage]);
+
+    const goToPage = (page) => {
+        const next = Math.max(1, Math.min(totalPages, page));
+        if (next === safePage) return;
+        setCurrentPage(next);
+        document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const pageItems = getPageNumbers(safePage, totalPages);
+
     return (
         <>
             <section className="container py-12" id="products">
@@ -94,18 +145,73 @@ export function Product({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4" id="product-grid">
-                    {products.map((product) => (
-                        <ProductCard
-                            key={product.id}
-                            product={product}
-                            wishlisted={isWishlisted(product.id)}
-                            onSelectProduct={onSelectProduct}
-                            onAddToCart={onAddToCart}
-                            onToggleWishlist={onToggleWishlist}
-                        />
-                    ))}
-                </div>
+                {paginatedProducts.length === 0 ? (
+                    <div className="rounded-xl border border-border bg-card py-12 text-center text-sm text-muted-foreground">
+                        No products match your search or filter.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4" id="product-grid">
+                        {paginatedProducts.map((product) => (
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                                wishlisted={isWishlisted(product.id)}
+                                onSelectProduct={onSelectProduct}
+                                onAddToCart={onAddToCart}
+                                onToggleWishlist={onToggleWishlist}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {totalPages > 1 && (
+                    <Pagination className="mt-10">
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#products"
+                                    aria-disabled={safePage === 1}
+                                    className={safePage === 1 ? 'pointer-events-none opacity-50' : ''}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        goToPage(safePage - 1);
+                                    }}
+                                />
+                            </PaginationItem>
+
+                            {pageItems.map((item, idx) => (
+                                <PaginationItem key={item === 'ellipsis' ? `ellipsis-${idx}` : item}>
+                                    {item === 'ellipsis' ? (
+                                        <PaginationEllipsis />
+                                    ) : (
+                                        <PaginationLink
+                                            href="#products"
+                                            isActive={item === safePage}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                goToPage(item);
+                                            }}
+                                        >
+                                            {item}
+                                        </PaginationLink>
+                                    )}
+                                </PaginationItem>
+                            ))}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#products"
+                                    aria-disabled={safePage === totalPages}
+                                    className={safePage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        goToPage(safePage + 1);
+                                    }}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                )}
             </section>
 
             <Dialog
