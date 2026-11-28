@@ -22,6 +22,7 @@ async function request(endpoint, options = {}) {
 }
 
 export const PettikadaiAPI = {
+
     // Auth
     register: (name, email, password) =>
         request('/auth/register', {
@@ -107,8 +108,16 @@ export const PettikadaiAPI = {
             body: JSON.stringify(productData)
         }),
 
+    toggleProductFeatured: (productId, isFeatured) =>
+        request(`/products/${productId}/featured`, {
+            method: 'PATCH',
+            body: JSON.stringify({ is_featured: isFeatured })
+        }),
+
     deleteProduct: (productId) =>
         request(`/products/${productId}`, { method: 'DELETE' }),
+
+    getAdminDashboard: () => request('/admin/dashboard'),
 
     getAdminUsers: () => request('/admin/users'),
 

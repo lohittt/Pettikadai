@@ -88,6 +88,14 @@ function validateProduct(data) {
     clean.description = stripHtml(data.description || '');
     clean.category_id = Number(data.category_id || data.categoryId);
 
+    if (data.is_featured !== undefined) {
+        if (typeof data.is_featured !== 'boolean') {
+            errors.push('is_featured must be a boolean');
+        } else {
+            clean.is_featured = data.is_featured;
+        }
+    }
+
     if (!clean.category_id) errors.push('Category is required');
 
     if (errors.length > 0) return { valid: false, errors };

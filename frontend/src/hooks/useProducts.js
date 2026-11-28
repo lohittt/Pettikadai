@@ -11,7 +11,8 @@ function mapProduct(p) {
         category: p.category,
         price: Number(p.price),
         image: p.image_url,
-        description: p.description
+        description: p.description,
+        isFeatured: Boolean(p.is_featured)
     };
 }
 
@@ -33,8 +34,19 @@ export function useProducts() {
         refreshProducts();
     }, [refreshProducts]);
 
+    const setProductFeaturedLocal = useCallback((productId, isFeatured) => {
+        setProducts((prev) =>
+            prev.map((p) => (p.id === productId ? { ...p, isFeatured } : p))
+        );
+    }, []);
+
     const productMap = useMemo(
         () => new Map(products.map((p) => [p.id, p])),
+        [products]
+    );
+
+    const featuredProducts = useMemo(
+        () => products.filter((p) => p.isFeatured),
         [products]
     );
 
@@ -55,6 +67,7 @@ export function useProducts() {
     return {
         products,
         productMap,
+        featuredProducts,
         filteredProducts,
         search,
         setSearch,
@@ -64,6 +77,7 @@ export function useProducts() {
         setSort,
         selectedProduct,
         setSelectedProduct,
-        refreshProducts
+        refreshProducts,
+        setProductFeaturedLocal
     };
 }

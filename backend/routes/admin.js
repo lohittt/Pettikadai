@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
-const { getUsers, getAllOrders, updateOrderStatus } = require('../controllers/adminController');
+const { getDashboard, getUsers, getAllOrders, updateOrderStatus } = require('../controllers/adminController');
 
 // All admin routes require authentication + admin role
 router.use(requireAuth, requireRole('admin'));
+
+// GET /api/admin/dashboard
+router.get('/dashboard', getDashboard);
 
 // GET /api/admin/users
 router.get('/users', getUsers);

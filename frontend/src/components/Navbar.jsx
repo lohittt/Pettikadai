@@ -28,13 +28,16 @@ export function Navbar({ wishlistCount, cartCount, onOpenWishlist, notify }) {
     return (
         <header className="header">
             <div className="container navbar">
-                <Link to={isAdmin ? '/admin/products' : '/'} className="navbar-brand">
+                <Link to={isAdmin ? '/admin/dashboard' : '/'} className="navbar-brand">
                     {isAdmin ? 'Pettikadai Admin' : 'Pettikadai'}
                 </Link>
 
                 <nav className="nav-links" aria-label="Main navigation">
                     {isAdmin ? (
                         <ul className="nav-list">
+                            <li>
+                                <NavLink to="/admin/dashboard">Dashboard</NavLink>
+                            </li>
                             <li>
                                 <NavLink to="/admin/products">Products</NavLink>
                             </li>

@@ -10,15 +10,17 @@ const EMPTY_FORM = {
     category_id: '',
     price: '',
     image_url: '',
-    description: ''
+    description: '',
+    is_featured: false
 };
 
-export function ProductManager({ products, refreshProducts, notify }) {
+export function ProductManager({ products, refreshProducts, setProductFeaturedLocal, notify }) {
     const [categories, setCategories] = useState([]);
     const [form, setForm] = useState(EMPTY_FORM);
     const [editingId, setEditingId] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [activeCategory, setActiveCategory] = useState('All');
+    const [featuredOnly, setFeaturedOnly] = useState(false);
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
@@ -40,11 +42,12 @@ export function ProductManager({ products, refreshProducts, notify }) {
     const filteredProducts = useMemo(() => {
         const term = search.trim().toLowerCase();
         return products.filter((p) => {
+            if (featuredOnly && !p.isFeatured) return false;
             const matchesCat = activeCategory === 'All' || p.category === activeCategory;
             const matchesSearch = !term || `${p.name} ${p.brand} ${p.category}`.toLowerCase().includes(term);
             return matchesCat && matchesSearch;
         });
-    }, [products, activeCategory, search]);
+    }, [products, activeCategory, featuredOnly, search]);
 
     const openAddForm = () => {
         setEditingId(null);
@@ -65,7 +68,8 @@ export function ProductManager({ products, refreshProducts, notify }) {
             category_id: matchedCat ? String(matchedCat.id) : (categories[0]?.id ? String(categories[0].id) : ''),
             price: String(product.price),
             image_url: product.image,
-            description: product.description || ''
+            description: product.description || '',
+            is_featured: Boolean(product.isFeatured)
         });
         setError('');
         setShowForm(true);
@@ -93,7 +97,8 @@ export function ProductManager({ products, refreshProducts, notify }) {
             category_id: Number(form.category_id),
             price: Number(form.price),
             image_url: sanitizeInput(form.image_url),
-            description: sanitizeInput(form.description)
+            description: sanitizeInput(form.description),
+            is_featured: Boolean(form.is_featured)
         };
 
         try {
@@ -112,6 +117,21 @@ export function ProductManager({ products, refreshProducts, notify }) {
             setError('Server error while saving product.');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleToggleFeatured = async (product) => {
+        const nextFeatured = !product.isFeatured;
+        setProductFeaturedLocal(product.id, nextFeatured);
+
+        const res = await PettikadaiAPI.toggleProductFeatured(product.id, nextFeatured);
+        if (res?.success) {
+            if (notify) notify(res.message);
+            await refreshProducts();
+        } else {
+            // Rollback optimistic update on failure
+            setProductFeaturedLocal(product.id, product.isFeatured);
+            if (notify) notify(res?.error || 'Failed to update featured status');
         }
     };
 
@@ -234,6 +254,14 @@ export function ProductManager({ products, refreshProducts, notify }) {
                                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                             />
                         </div>
+                        <label className="featured-checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={form.is_featured}
+                                onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
+                            />
+                            <span>Feature this product on storefront</span>
+                        </label>
                         <div className="admin-form-actions">
                             <button type="submit" className="place-order-btn" disabled={saving}>
                                 {saving ? 'Saving...' : (editingId ? 'Update Product' : 'Add Product')}
@@ -254,6 +282,13 @@ export function ProductManager({ products, refreshProducts, notify }) {
                         {cat === 'All' ? 'All Products' : cat}
                     </button>
                 ))}
+                <button
+                    type="button"
+                    className={`category-button${featuredOnly ? ' active' : ''}`}
+                    onClick={() => setFeaturedOnly((prev) => !prev)}
+                >
+                    ★ Featured Only
+                </button>
             </div>
 
             <div className="admin-card">
@@ -264,13 +299,14 @@ export function ProductManager({ products, refreshProducts, notify }) {
                                 <th>Product</th>
                                 <th>Category</th>
                                 <th>Price</th>
+                                <th>Featured</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredProducts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} style={{ textAlign: 'center', padding: '24px', color: '#777' }}>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#777' }}>
                                         No products match the current filter.
                                     </td>
                                 </tr>
@@ -288,6 +324,16 @@ export function ProductManager({ products, refreshProducts, notify }) {
                                         </td>
                                         <td>{p.category}</td>
                                         <td>{formatINR(p.price)}</td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className={`featured-toggle-btn${p.isFeatured ? ' active' : ''}`}
+                                                aria-pressed={p.isFeatured}
+                                                onClick={() => handleToggleFeatured(p)}
+                                            >
+                                                {p.isFeatured ? '★ Featured' : '☆ Standard'}
+                                            </button>
+                                        </td>
                                         <td>
                                             <div className="admin-row-actions">
                                                 <button

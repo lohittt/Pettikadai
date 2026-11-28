@@ -2,6 +2,105 @@ const db = require('../db/connection');
 const { attachItemsToOrders } = require('../services/orderService');
 
 /**
+ * GET /api/admin/dashboard — Aggregated monitoring stats for orders, products, and users.
+ */
+async function getDashboard(req, res) {
+    try {
+        const [
+            [orderAggRows],
+            [productAggRows],
+            [categoryBreakdown],
+            [userAggRows],
+            [recentOrders],
+            [recentUsers]
+        ] = await Promise.all([
+            db.query(`
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(status = 'pending') AS pending,
+                    SUM(status = 'confirmed') AS confirmed,
+                    SUM(status = 'shipped') AS shipped,
+                    SUM(status = 'delivered') AS delivered,
+                    SUM(status = 'cancelled') AS cancelled,
+                    COALESCE(SUM(CASE WHEN status != 'cancelled' THEN total_amount ELSE 0 END), 0) AS totalRevenue
+                FROM orders
+            `),
+            db.query(`
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(is_featured = TRUE) AS featured
+                FROM products
+            `),
+            db.query(`
+                SELECT c.name AS category, COUNT(p.id) AS count
+                FROM categories c
+                LEFT JOIN products p ON p.category_id = c.id
+                GROUP BY c.id, c.name
+                ORDER BY c.name ASC
+            `),
+            db.query(`
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(role = 'user') AS customers,
+                    SUM(role = 'admin') AS admins
+                FROM users
+            `),
+            db.query(`
+                SELECT o.order_id, o.total_amount, o.status, o.created_at,
+                       COALESCE(NULLIF(o.name, ''), u.name, 'Customer') AS user_name
+                FROM orders o
+                LEFT JOIN users u ON o.user_id = u.id
+                ORDER BY o.created_at DESC
+                LIMIT 5
+            `),
+            db.query(`
+                SELECT id, name, email, role, created_at
+                FROM users
+                ORDER BY created_at DESC
+                LIMIT 5
+            `)
+        ]);
+
+        const ord = orderAggRows[0] || {};
+        const prod = productAggRows[0] || {};
+        const usr = userAggRows[0] || {};
+
+        res.json({
+            success: true,
+            dashboard: {
+                orders: {
+                    total: Number(ord.total) || 0,
+                    pending: Number(ord.pending) || 0,
+                    confirmed: Number(ord.confirmed) || 0,
+                    shipped: Number(ord.shipped) || 0,
+                    delivered: Number(ord.delivered) || 0,
+                    cancelled: Number(ord.cancelled) || 0,
+                    totalRevenue: Number(ord.totalRevenue) || 0
+                },
+                products: {
+                    total: Number(prod.total) || 0,
+                    featured: Number(prod.featured) || 0,
+                    byCategory: categoryBreakdown.map(r => ({
+                        category: r.category,
+                        count: Number(r.count) || 0
+                    }))
+                },
+                users: {
+                    total: Number(usr.total) || 0,
+                    customers: Number(usr.customers) || 0,
+                    admins: Number(usr.admins) || 0
+                },
+                recentOrders,
+                recentUsers
+            }
+        });
+    } catch (err) {
+        console.error('GET /api/admin/dashboard error:', err);
+        res.status(500).json({ success: false, error: 'Failed to load dashboard' });
+    }
+}
+
+/**
  * GET /api/admin/users — List all users (safe fields only).
  */
 async function getUsers(req, res) {
@@ -68,4 +167,4 @@ async function updateOrderStatus(req, res) {
     }
 }
 
-module.exports = { getUsers, getAllOrders, updateOrderStatus };
+module.exports = { getDashboard, getUsers, getAllOrders, updateOrderStatus };

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Product } from './components/user/Product';
+import { FeaturedProducts } from './components/user/FeaturedProducts';
 import { Cart } from './components/user/Cart';
 import { Wishlist } from './components/user/Wishlist';
 import { WishlistPage } from './components/user/WishlistPage';
@@ -10,6 +11,7 @@ import { Orders } from './components/user/Orders';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Dashboard } from './components/admin/Dashboard';
 import { ProductManager } from './components/admin/ProductManager';
 import { UserMonitor } from './components/admin/UserMonitor';
 import { OrderApproval } from './components/admin/OrderApproval';
@@ -39,6 +41,7 @@ export default function App() {
     const {
         products,
         productMap,
+        featuredProducts,
         filteredProducts,
         search,
         setSearch,
@@ -48,7 +51,8 @@ export default function App() {
         setSort,
         selectedProduct,
         setSelectedProduct,
-        refreshProducts
+        refreshProducts,
+        setProductFeaturedLocal
     } = useProducts();
 
     const {
@@ -117,7 +121,7 @@ export default function App() {
     }, [closeWishlist, setSelectedProduct, closeCheckout, closeAddressModal]);
 
     const StorefrontView = isAdmin ? (
-        <Navigate to="/admin/products" replace />
+        <Navigate to="/admin/dashboard" replace />
     ) : (
         <>
             <section className="hero" id="home">
@@ -171,6 +175,14 @@ export default function App() {
                     </div>
                 </div>
             </section>
+
+            <FeaturedProducts
+                products={featuredProducts}
+                onSelectProduct={setSelectedProduct}
+                onAddToCart={addToCart}
+                onToggleWishlist={toggleWishlist}
+                isWishlisted={isWishlisted}
+            />
 
             <Product
                 products={filteredProducts}
@@ -278,8 +290,16 @@ export default function App() {
                         }
                     />
 
-                    {/* Admin-only routes (Products, Users, Orders) */}
-                    <Route path="/admin" element={<Navigate to="/admin/products" replace />} />
+                    {/* Admin-only routes (Dashboard, Products, Users, Orders) */}
+                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route
+                        path="/admin/dashboard"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/admin/products"
                         element={
@@ -287,6 +307,7 @@ export default function App() {
                                 <ProductManager
                                     products={products}
                                     refreshProducts={refreshProducts}
+                                    setProductFeaturedLocal={setProductFeaturedLocal}
                                     notify={notify}
                                 />
                             </ProtectedRoute>
@@ -323,6 +344,7 @@ export default function App() {
                         <h3>Quick Links</h3>
                         {isAdmin ? (
                             <>
+                                <a href="/admin/dashboard">Dashboard</a>
                                 <a href="/admin/products">Products</a>
                                 <a href="/admin/users">Users</a>
                                 <a href="/admin/orders">Orders</a>
