@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Navbar } from './components/Navbar';
 import { Product } from './components/user/Product';
 import { FeaturedProducts } from './components/user/FeaturedProducts';
@@ -24,15 +25,8 @@ import { useOrders } from './hooks/useOrders';
 import { useCheckout } from './hooks/useCheckout';
 
 export default function App() {
-    const [notification, setNotification] = useState('');
-    const notifyTimerRef = useRef(null);
-
     const notify = useCallback((message) => {
-        setNotification(message);
-        clearTimeout(notifyTimerRef.current);
-        notifyTimerRef.current = setTimeout(() => {
-            setNotification('');
-        }, 2800);
+        if (message) toast(message);
     }, []);
 
     const { user, isAuthenticated, isAdmin } = useAuth();
@@ -332,7 +326,7 @@ export default function App() {
                 </Routes>
             </main>
 
-            <Notification message={notification} />
+            <Notification />
 
             <footer className="footer" id="contact">
                 <div className="container footer-content">

@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { validateName, validateEmail, validatePassword, sanitizeInput } from '../services/validation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function Register({ notify }) {
     const [name, setName] = useState('');
@@ -51,76 +57,92 @@ export function Register({ notify }) {
     };
 
     return (
-        <section className="auth-section container">
-            <div className="auth-card">
-                <p className="subtitle">JOIN PETTIKADAI</p>
-                <h2>Create Account</h2>
-                <p className="auth-subtext">Sign up to save your wishlist, cart, and track orders.</p>
+        <section className="container flex justify-center py-16">
+            <Card className="w-full max-w-md">
+                <CardHeader>
+                    <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                        Join Pettikadai
+                    </p>
+                    <CardTitle className="text-2xl">Create Account</CardTitle>
+                    <CardDescription>Sign up to save your wishlist, cart, and track orders.</CardDescription>
+                </CardHeader>
 
-                {error && <div className="auth-error" role="alert">{error}</div>}
+                <CardContent className="flex flex-col gap-4">
+                    {error && (
+                        <Alert variant="destructive">
+                            <AlertCircle />
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
 
-                <form className="auth-form" onSubmit={handleSubmit} noValidate>
-                    <div className="form-group">
-                        <label htmlFor="register-name">Full Name</label>
-                        <input
-                            id="register-name"
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Your full name"
-                            autoComplete="name"
-                            required
-                        />
-                    </div>
+                    <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="register-name">Full Name</Label>
+                            <Input
+                                id="register-name"
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Your full name"
+                                autoComplete="name"
+                                required
+                            />
+                        </div>
 
-                    <div className="form-group">
-                        <label htmlFor="register-email">Email Address</label>
-                        <input
-                            id="register-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="you@example.com"
-                            autoComplete="email"
-                            required
-                        />
-                    </div>
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="register-email">Email Address</Label>
+                            <Input
+                                id="register-email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="you@example.com"
+                                autoComplete="email"
+                                required
+                            />
+                        </div>
 
-                    <div className="form-group">
-                        <label htmlFor="register-password">Password</label>
-                        <input
-                            id="register-password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="At least 6 characters"
-                            autoComplete="new-password"
-                            required
-                        />
-                    </div>
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="register-password">Password</Label>
+                            <Input
+                                id="register-password"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="At least 6 characters"
+                                autoComplete="new-password"
+                                required
+                            />
+                        </div>
 
-                    <div className="form-group">
-                        <label htmlFor="register-confirm">Confirm Password</label>
-                        <input
-                            id="register-confirm"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="Re-enter password"
-                            autoComplete="new-password"
-                            required
-                        />
-                    </div>
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="register-confirm">Confirm Password</Label>
+                            <Input
+                                id="register-confirm"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Re-enter password"
+                                autoComplete="new-password"
+                                required
+                            />
+                        </div>
 
-                    <button type="submit" className="place-order-btn" disabled={submitting}>
-                        {submitting ? 'Creating account...' : 'Create Account →'}
-                    </button>
-                </form>
+                        <Button type="submit" className="w-full" disabled={submitting}>
+                            {submitting ? 'Creating account...' : 'Create Account →'}
+                        </Button>
+                    </form>
+                </CardContent>
 
-                <p className="auth-footer">
-                    Already have an account? <Link to="/login">Sign in</Link>
-                </p>
-            </div>
+                <CardFooter className="justify-center text-sm text-muted-foreground">
+                    <span>
+                        Already have an account?{' '}
+                        <Link to="/login" className="font-semibold text-foreground underline underline-offset-4">
+                            Sign in
+                        </Link>
+                    </span>
+                </CardFooter>
+            </Card>
         </section>
     );
 }

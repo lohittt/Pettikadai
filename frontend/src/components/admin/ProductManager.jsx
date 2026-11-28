@@ -1,8 +1,33 @@
 import { useState, useEffect, useMemo } from 'react';
+import { AlertCircle, Plus, Star, Pencil, Trash2 } from 'lucide-react';
 import { PettikadaiAPI } from '../../api/pettikadaiApi';
 import { CATEGORIES } from '../../hooks/useProducts';
 import { formatINR } from '../../utils/format';
 import { sanitizeInput } from '../../services/validation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/components/ui/table';
 
 const EMPTY_FORM = {
     name: '',
@@ -48,6 +73,9 @@ export function ProductManager({ products, refreshProducts, setProductFeaturedLo
             return matchesCat && matchesSearch;
         });
     }, [products, activeCategory, featuredOnly, search]);
+
+    const selectedCategoryName =
+        categories.find((c) => String(c.id) === String(form.category_id))?.name || 'Select category';
 
     const openAddForm = () => {
         setEditingId(null);
@@ -129,7 +157,6 @@ export function ProductManager({ products, refreshProducts, setProductFeaturedLo
             if (notify) notify(res.message);
             await refreshProducts();
         } else {
-            // Rollback optimistic update on failure
             setProductFeaturedLocal(product.id, product.isFeatured);
             if (notify) notify(res?.error || 'Failed to update featured status');
         }
@@ -148,217 +175,255 @@ export function ProductManager({ products, refreshProducts, setProductFeaturedLo
     };
 
     return (
-        <section className="page-section container">
-            <div className="section-heading">
+        <section className="container min-h-[60vh] py-12">
+            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div>
-                    <p className="subtitle">CATALOG MANAGEMENT</p>
-                    <h2>Products ({filteredProducts.length})</h2>
+                    <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                        Catalog Management
+                    </p>
+                    <h2 className="text-3xl font-bold tracking-tight">
+                        Products ({filteredProducts.length})
+                    </h2>
                 </div>
-                <div className="admin-toolbar">
-                    <input
+                <div className="flex flex-wrap items-center gap-3">
+                    <Input
                         type="search"
-                        className="admin-search"
                         placeholder="Search products..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        className="w-56"
                     />
-                    <button
+                    <Button
                         type="button"
-                        className="primary-button"
                         onClick={showForm && !editingId ? handleCancel : openAddForm}
                     >
-                        {showForm && !editingId ? 'Close Form' : '+ Add New Product'}
-                    </button>
+                        {!(showForm && !editingId) && <Plus data-icon="inline-start" />}
+                        {showForm && !editingId ? 'Close Form' : 'Add New Product'}
+                    </Button>
                 </div>
             </div>
 
             {showForm && (
-                <div className="admin-card admin-form-card">
-                    <div className="admin-card-header">
-                        <h3>{editingId ? 'Edit Product' : 'Add New Product'}</h3>
-                        <button type="button" className="checkout-action" onClick={handleCancel}>
+                <Card className="mb-6">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>{editingId ? 'Edit Product' : 'Add New Product'}</CardTitle>
+                        <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
                             Cancel
-                        </button>
-                    </div>
-                    {error && <div className="auth-error" role="alert">{error}</div>}
-                    <form className="auth-form" onSubmit={handleSubmit}>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label htmlFor="prod-name">Product Name</label>
-                                <input
-                                    id="prod-name"
-                                    type="text"
-                                    value={form.name}
-                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                    placeholder="e.g. Sony WH-1000XM5"
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertCircle />
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+                        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="prod-name">Product Name</Label>
+                                    <Input
+                                        id="prod-name"
+                                        type="text"
+                                        value={form.name}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                        placeholder="e.g. Sony WH-1000XM5"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="prod-brand">Brand</Label>
+                                    <Input
+                                        id="prod-brand"
+                                        type="text"
+                                        value={form.brand}
+                                        onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                                        placeholder="e.g. Sony"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="prod-cat">Category</Label>
+                                    <Select
+                                        value={String(form.category_id)}
+                                        onValueChange={(val) => setForm({ ...form, category_id: val })}
+                                    >
+                                        <SelectTrigger id="prod-cat" className="w-full">
+                                            <SelectValue>{selectedCategoryName}</SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {categories.map((c) => (
+                                                    <SelectItem key={c.id} value={String(c.id)}>
+                                                        {c.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="prod-price">Price (INR)</Label>
+                                    <Input
+                                        id="prod-price"
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={form.price}
+                                        onChange={(e) => setForm({ ...form, price: e.target.value })}
+                                        placeholder="e.g. 24999"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="prod-img">Image URL</Label>
+                                <Input
+                                    id="prod-img"
+                                    type="url"
+                                    value={form.image_url}
+                                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                                    placeholder="https://..."
                                     required
                                 />
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="prod-brand">Brand</label>
-                                <input
-                                    id="prod-brand"
-                                    type="text"
-                                    value={form.brand}
-                                    onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                                    placeholder="e.g. Sony"
-                                    required
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="prod-desc">Description</Label>
+                                <Textarea
+                                    id="prod-desc"
+                                    rows={2}
+                                    value={form.description}
+                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
                                 />
                             </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label htmlFor="prod-cat">Category</label>
-                                <select
-                                    id="prod-cat"
-                                    value={form.category_id}
-                                    onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-                                    required
-                                >
-                                    {categories.map((c) => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="prod-price">Price (INR)</label>
-                                <input
-                                    id="prod-price"
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    value={form.price}
-                                    onChange={(e) => setForm({ ...form, price: e.target.value })}
-                                    placeholder="e.g. 24999"
-                                    required
+
+                            <div className="flex items-center gap-2.5">
+                                <Checkbox
+                                    id="prod-featured"
+                                    checked={form.is_featured}
+                                    onCheckedChange={(checked) =>
+                                        setForm({ ...form, is_featured: Boolean(checked) })
+                                    }
                                 />
+                                <Label htmlFor="prod-featured" className="cursor-pointer">
+                                    Feature this product on storefront
+                                </Label>
                             </div>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="prod-img">Image URL</label>
-                            <input
-                                id="prod-img"
-                                type="url"
-                                value={form.image_url}
-                                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                                placeholder="https://..."
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="prod-desc">Description</label>
-                            <textarea
-                                id="prod-desc"
-                                rows={2}
-                                value={form.description}
-                                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                            />
-                        </div>
-                        <label className="featured-checkbox-label">
-                            <input
-                                type="checkbox"
-                                checked={form.is_featured}
-                                onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
-                            />
-                            <span>Feature this product on storefront</span>
-                        </label>
-                        <div className="admin-form-actions">
-                            <button type="submit" className="place-order-btn" disabled={saving}>
-                                {saving ? 'Saving...' : (editingId ? 'Update Product' : 'Add Product')}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+
+                            <div>
+                                <Button type="submit" disabled={saving}>
+                                    {saving ? 'Saving...' : (editingId ? 'Update Product' : 'Add Product')}
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
             )}
 
-            <div className="categories admin-categories">
+            <div className="mb-6 flex flex-wrap gap-2">
                 {CATEGORIES.map((cat) => (
-                    <button
+                    <Button
                         key={cat}
                         type="button"
-                        className={`category-button${activeCategory === cat ? ' active' : ''}`}
+                        variant={activeCategory === cat ? 'default' : 'outline'}
                         onClick={() => setActiveCategory(cat)}
                     >
                         {cat === 'All' ? 'All Products' : cat}
-                    </button>
+                    </Button>
                 ))}
-                <button
+                <Button
                     type="button"
-                    className={`category-button${featuredOnly ? ' active' : ''}`}
+                    variant={featuredOnly ? 'default' : 'outline'}
                     onClick={() => setFeaturedOnly((prev) => !prev)}
                 >
-                    ★ Featured Only
-                </button>
+                    <Star data-icon="inline-start" className={featuredOnly ? 'fill-current' : ''} />
+                    Featured Only
+                </Button>
             </div>
 
-            <div className="admin-card">
-                <div className="admin-table-wrap">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Featured</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <Card>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Product</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Featured</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {filteredProducts.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#777' }}>
+                                <TableRow>
+                                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                                         No products match the current filter.
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ) : (
                                 filteredProducts.map((p) => (
-                                    <tr key={p.id}>
-                                        <td>
-                                            <div className="admin-product-cell">
-                                                <img src={p.image} alt={p.name} />
+                                    <TableRow key={p.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={p.image}
+                                                    alt={p.name}
+                                                    className="size-11 rounded-md bg-muted object-cover"
+                                                />
                                                 <div>
-                                                    <strong>{p.name}</strong>
-                                                    <small>{p.brand}</small>
+                                                    <strong className="block font-semibold">{p.name}</strong>
+                                                    <small className="text-xs text-muted-foreground">{p.brand}</small>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td>{p.category}</td>
-                                        <td>{formatINR(p.price)}</td>
-                                        <td>
-                                            <button
-                                                type="button"
-                                                className={`featured-toggle-btn${p.isFeatured ? ' active' : ''}`}
-                                                aria-pressed={p.isFeatured}
-                                                onClick={() => handleToggleFeatured(p)}
-                                            >
-                                                {p.isFeatured ? '★ Featured' : '☆ Standard'}
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <div className="admin-row-actions">
-                                                <button
+                                        </TableCell>
+                                        <TableCell>{p.category}</TableCell>
+                                        <TableCell className="font-medium">{formatINR(p.price)}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Switch
+                                                    checked={p.isFeatured}
+                                                    onCheckedChange={() => handleToggleFeatured(p)}
+                                                    aria-label={`Toggle featured for ${p.name}`}
+                                                />
+                                                <span className="text-xs text-muted-foreground">
+                                                    {p.isFeatured ? 'Featured' : 'Standard'}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="inline-flex items-center gap-2">
+                                                <Button
                                                     type="button"
-                                                    className="checkout-action"
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => handleEdit(p)}
                                                 >
+                                                    <Pencil data-icon="inline-start" />
                                                     Edit
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     type="button"
-                                                    className="admin-delete-btn"
+                                                    variant="destructive"
+                                                    size="sm"
                                                     onClick={() => handleDelete(p.id, p.name)}
                                                 >
+                                                    <Trash2 data-icon="inline-start" />
                                                     Delete
-                                                </button>
+                                                </Button>
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))
                             )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
         </section>
     );
 }

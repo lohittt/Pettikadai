@@ -1,7 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { PettikadaiAPI } from '../../api/pettikadaiApi';
 import { formatINR } from '../../utils/format';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/components/ui/table';
+
+const STATUS_VARIANTS = {
+    pending: 'outline',
+    confirmed: 'default',
+    shipped: 'secondary',
+    delivered: 'default',
+    cancelled: 'destructive'
+};
 
 export function Dashboard() {
     const [data, setData] = useState(null);
@@ -30,174 +51,215 @@ export function Dashboard() {
     }, [loadDashboard]);
 
     return (
-        <section className="page-section container">
-            <div className="section-heading">
+        <section className="container min-h-[60vh] py-12">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p className="subtitle">OVERVIEW</p>
-                    <h2>Admin Dashboard</h2>
+                    <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                        Overview
+                    </p>
+                    <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
                 </div>
-                <button
-                    type="button"
-                    className="checkout-action"
-                    onClick={loadDashboard}
-                    disabled={loading}
-                >
+                <Button type="button" variant="outline" onClick={loadDashboard} disabled={loading}>
+                    <RefreshCw data-icon="inline-start" className={loading ? 'animate-spin' : ''} />
                     {loading ? 'Refreshing...' : 'Refresh'}
-                </button>
+                </Button>
             </div>
 
-            {error && <div className="auth-error" role="alert">{error}</div>}
+            {error && (
+                <Alert variant="destructive" className="mb-6">
+                    <AlertCircle />
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
 
             {loading && !data ? (
-                <div className="empty-state">
-                    <p>Loading dashboard metrics...</p>
-                </div>
+                <Card className="py-12 text-center">
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">Loading dashboard metrics...</p>
+                    </CardContent>
+                </Card>
             ) : data ? (
-                <>
-                    <div className="dashboard-kpi-grid">
-                        <Link to="/admin/orders" className="kpi-card">
-                            <span className="kpi-label">Total Orders</span>
-                            <strong className="kpi-value">{data.orders.total}</strong>
-                            <small className="kpi-sub">
-                                {data.orders.pending} pending approval
-                            </small>
+                <div className="flex flex-col gap-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <Link to="/admin/orders" className="block">
+                            <Card className="h-full transition-colors hover:border-foreground/50">
+                                <CardHeader className="pb-2">
+                                    <CardDescription className="text-xs font-semibold uppercase tracking-wider">
+                                        Total Orders
+                                    </CardDescription>
+                                    <CardTitle className="text-3xl">{data.orders.total}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-xs text-muted-foreground">
+                                    {data.orders.pending} pending approval
+                                </CardContent>
+                            </Card>
                         </Link>
 
-                        <Link to="/admin/orders" className="kpi-card">
-                            <span className="kpi-label">Total Revenue</span>
-                            <strong className="kpi-value">{formatINR(data.orders.totalRevenue)}</strong>
-                            <small className="kpi-sub">
-                                {data.orders.confirmed + data.orders.shipped + data.orders.delivered} active/completed
-                            </small>
+                        <Link to="/admin/orders" className="block">
+                            <Card className="h-full transition-colors hover:border-foreground/50">
+                                <CardHeader className="pb-2">
+                                    <CardDescription className="text-xs font-semibold uppercase tracking-wider">
+                                        Total Revenue
+                                    </CardDescription>
+                                    <CardTitle className="text-3xl">{formatINR(data.orders.totalRevenue)}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-xs text-muted-foreground">
+                                    {data.orders.confirmed + data.orders.shipped + data.orders.delivered} active/completed
+                                </CardContent>
+                            </Card>
                         </Link>
 
-                        <Link to="/admin/products" className="kpi-card">
-                            <span className="kpi-label">Products</span>
-                            <strong className="kpi-value">{data.products.total}</strong>
-                            <small className="kpi-sub">
-                                {data.products.featured} featured on storefront
-                            </small>
+                        <Link to="/admin/products" className="block">
+                            <Card className="h-full transition-colors hover:border-foreground/50">
+                                <CardHeader className="pb-2">
+                                    <CardDescription className="text-xs font-semibold uppercase tracking-wider">
+                                        Products
+                                    </CardDescription>
+                                    <CardTitle className="text-3xl">{data.products.total}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-xs text-muted-foreground">
+                                    {data.products.featured} featured on storefront
+                                </CardContent>
+                            </Card>
                         </Link>
 
-                        <Link to="/admin/users" className="kpi-card">
-                            <span className="kpi-label">Registered Users</span>
-                            <strong className="kpi-value">{data.users.total}</strong>
-                            <small className="kpi-sub">
-                                {data.users.customers} customers · {data.users.admins} admins
-                            </small>
+                        <Link to="/admin/users" className="block">
+                            <Card className="h-full transition-colors hover:border-foreground/50">
+                                <CardHeader className="pb-2">
+                                    <CardDescription className="text-xs font-semibold uppercase tracking-wider">
+                                        Registered Users
+                                    </CardDescription>
+                                    <CardTitle className="text-3xl">{data.users.total}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-xs text-muted-foreground">
+                                    {data.users.customers} customers · {data.users.admins} admins
+                                </CardContent>
+                            </Card>
                         </Link>
                     </div>
 
-                    <div className="dashboard-panels">
-                        <div className="admin-card">
-                            <div className="admin-card-header">
-                                <h3>Order Status Breakdown</h3>
-                                <Link to="/admin/orders" className="checkout-action">Manage →</Link>
-                            </div>
-                            <div className="status-breakdown-list">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg">Order Status Breakdown</CardTitle>
+                                <Button variant="outline" size="sm" render={<Link to="/admin/orders" />}>
+                                    Manage →
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="flex flex-col divide-y">
                                 {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((status) => (
-                                    <div className="breakdown-row" key={status}>
-                                        <span className={`status-badge status-${status}`}>{status}</span>
+                                    <div className="flex items-center justify-between py-2.5 text-sm" key={status}>
+                                        <Badge variant={STATUS_VARIANTS[status] || 'secondary'} className="capitalize">
+                                            {status}
+                                        </Badge>
                                         <strong>{data.orders[status] ?? 0}</strong>
                                     </div>
                                 ))}
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
 
-                        <div className="admin-card">
-                            <div className="admin-card-header">
-                                <h3>Catalog by Category</h3>
-                                <Link to="/admin/products" className="checkout-action">Manage →</Link>
-                            </div>
-                            {data.products.byCategory.length === 0 ? (
-                                <p>No categories found.</p>
-                            ) : (
-                                <div className="status-breakdown-list">
-                                    {data.products.byCategory.map((row) => (
-                                        <div className="breakdown-row" key={row.category}>
-                                            <span>{row.category}</span>
-                                            <strong>{row.count} products</strong>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg">Catalog by Category</CardTitle>
+                                <Button variant="outline" size="sm" render={<Link to="/admin/products" />}>
+                                    Manage →
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
+                                {data.products.byCategory.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No categories found.</p>
+                                ) : (
+                                    <div className="flex flex-col divide-y">
+                                        {data.products.byCategory.map((row) => (
+                                            <div className="flex items-center justify-between py-2.5 text-sm" key={row.category}>
+                                                <span>{row.category}</span>
+                                                <strong>{row.count} products</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
 
-                    <div className="dashboard-panels" style={{ marginTop: '24px' }}>
-                        <div className="admin-card">
-                            <div className="admin-card-header">
-                                <h3>Recent Orders</h3>
-                                <Link to="/admin/orders" className="checkout-action">View All</Link>
-                            </div>
-                            {data.recentOrders.length === 0 ? (
-                                <p className="dashboard-muted">No orders placed yet.</p>
-                            ) : (
-                                <div className="admin-table-wrap">
-                                    <table className="admin-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Order</th>
-                                                <th>Customer</th>
-                                                <th>Amount</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg">Recent Orders</CardTitle>
+                                <Button variant="outline" size="sm" render={<Link to="/admin/orders" />}>
+                                    View All
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
+                                {data.recentOrders.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No orders placed yet.</p>
+                                ) : (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Order</TableHead>
+                                                <TableHead>Customer</TableHead>
+                                                <TableHead>Amount</TableHead>
+                                                <TableHead>Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
                                             {data.recentOrders.map((o) => (
-                                                <tr key={o.order_id}>
-                                                    <td><strong>{o.order_id}</strong></td>
-                                                    <td>{o.user_name}</td>
-                                                    <td>{formatINR(o.total_amount)}</td>
-                                                    <td>
-                                                        <span className={`status-badge status-${o.status}`}>
+                                                <TableRow key={o.order_id}>
+                                                    <TableCell className="font-semibold">{o.order_id}</TableCell>
+                                                    <TableCell>{o.user_name}</TableCell>
+                                                    <TableCell>{formatINR(o.total_amount)}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={STATUS_VARIANTS[o.status] || 'secondary'} className="capitalize">
                                                             {o.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
                                             ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
+                                        </TableBody>
+                                    </Table>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                        <div className="admin-card">
-                            <div className="admin-card-header">
-                                <h3>Recent Users</h3>
-                                <Link to="/admin/users" className="checkout-action">View All</Link>
-                            </div>
-                            {data.recentUsers.length === 0 ? (
-                                <p className="dashboard-muted">No users registered yet.</p>
-                            ) : (
-                                <div className="admin-table-wrap">
-                                    <table className="admin-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Email</th>
-                                                <th>Role</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg">Recent Users</CardTitle>
+                                <Button variant="outline" size="sm" render={<Link to="/admin/users" />}>
+                                    View All
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
+                                {data.recentUsers.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No users registered yet.</p>
+                                ) : (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Name</TableHead>
+                                                <TableHead>Email</TableHead>
+                                                <TableHead>Role</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
                                             {data.recentUsers.map((u) => (
-                                                <tr key={u.id}>
-                                                    <td>{u.name}</td>
-                                                    <td>{u.email}</td>
-                                                    <td>
-                                                        <span className={`role-badge role-${u.role}`}>
+                                                <TableRow key={u.id}>
+                                                    <TableCell>{u.name}</TableCell>
+                                                    <TableCell>{u.email}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={u.role === 'admin' ? 'default' : 'secondary'} className="uppercase">
                                                             {u.role}
-                                                        </span>
-                                                    </td>
-                                                </tr>
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
                                             ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
+                                        </TableBody>
+                                    </Table>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
-                </>
+                </div>
             ) : null}
         </section>
     );

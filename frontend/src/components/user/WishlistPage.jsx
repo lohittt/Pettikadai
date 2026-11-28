@@ -1,59 +1,77 @@
 import { Link } from 'react-router-dom';
+import { Heart } from 'lucide-react';
 import { formatINR } from '../../utils/format';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 export function WishlistPage({ wishlist, productMap, onRemove, onAddToCart }) {
     const items = wishlist.map((id) => productMap.get(id)).filter(Boolean);
 
     return (
-        <section className="page-section container">
-            <div className="section-heading">
+        <section className="container min-h-[60vh] py-12">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p className="subtitle">SAVED ITEMS</p>
-                    <h2>My Wishlist ♥</h2>
+                    <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                        Saved Items
+                    </p>
+                    <h2 className="text-3xl font-bold tracking-tight">My Wishlist ♥</h2>
                 </div>
-                <Link to="/" className="checkout-action">
+                <Button variant="outline" render={<Link to="/" />}>
                     ← Continue Shopping
-                </Link>
+                </Button>
             </div>
 
             {items.length === 0 ? (
-                <div className="empty-state">
-                    <h3>Your wishlist is empty</h3>
-                    <p>Save products you love while browsing the store.</p>
-                    <Link to="/" className="primary-button" style={{ marginTop: '16px' }}>
-                        Browse Products →
-                    </Link>
-                </div>
+                <Card className="py-12 text-center">
+                    <CardContent className="flex flex-col items-center gap-3">
+                        <Heart className="size-10 text-red-500" />
+                        <h3 className="text-xl font-semibold">Your wishlist is empty</h3>
+                        <p className="text-sm text-muted-foreground">
+                            Save products you love while browsing the store.
+                        </p>
+                        <Button render={<Link to="/" />} className="mt-2">
+                            Browse Products →
+                        </Button>
+                    </CardContent>
+                </Card>
             ) : (
-                <div className="product-grid">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     {items.map((product) => (
-                        <div className="product-card" key={product.id}>
-                            <div className="product-image">
-                                <img src={product.image} alt={product.name} />
+                        <Card key={product.id} className="overflow-hidden pt-0">
+                            <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover"
+                                />
                             </div>
-                            <div className="product-info">
-                                <span className="product-category">{product.brand}</span>
-                                <h3>{product.name}</h3>
-                                <p className="product-price">{formatINR(product.price)}</p>
-                                <div className="product-buttons">
-                                    <button
-                                        className="add-to-cart"
-                                        type="button"
-                                        onClick={() => onAddToCart(product.id)}
-                                    >
-                                        Move to Cart
-                                    </button>
-                                    <button
-                                        className="add-to-wishlist active"
-                                        type="button"
-                                        title="Remove from Wishlist"
-                                        onClick={() => onRemove(product.id)}
-                                    >
-                                        ♥
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                            <CardContent className="flex flex-col gap-1.5 pt-4">
+                                <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                                    {product.brand}
+                                </span>
+                                <h3 className="truncate text-base font-semibold">{product.name}</h3>
+                                <p className="text-lg font-bold">{formatINR(product.price)}</p>
+                            </CardContent>
+                            <CardFooter className="gap-2 pt-0">
+                                <Button
+                                    type="button"
+                                    className="flex-1 rounded-full"
+                                    onClick={() => onAddToCart(product.id)}
+                                >
+                                    Move to Cart
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="rounded-full"
+                                    title="Remove from Wishlist"
+                                    onClick={() => onRemove(product.id)}
+                                >
+                                    <Heart className="fill-red-500 text-red-500" />
+                                </Button>
+                            </CardFooter>
+                        </Card>
                     ))}
                 </div>
             )}

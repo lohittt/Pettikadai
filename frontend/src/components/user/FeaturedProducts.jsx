@@ -12,15 +12,17 @@ export function FeaturedProducts({
     }
 
     return (
-        <section className="featured-section container" id="featured">
-            <div className="section-heading">
+        <section className="container py-10" id="featured">
+            <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
-                    <p className="subtitle">CURATED PICKS</p>
-                    <h2>Featured Products</h2>
+                    <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                        Curated Picks
+                    </p>
+                    <h2 className="text-3xl font-bold tracking-tight">Featured Products</h2>
                 </div>
             </div>
 
-            <div className="product-grid">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {products.map((product) => (
                     <ProductCard
                         key={product.id}

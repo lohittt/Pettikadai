@@ -1,13 +1,5 @@
-export function Notification({ message }) {
-    return (
-        <div
-            className="cart-notification"
-            id="cart-notification"
-            role="status"
-            aria-live="polite"
-            hidden={!message}
-        >
-            {message}
-        </div>
-    );
+import { Toaster } from '@/components/ui/sonner';
+
+export function Notification() {
+    return <Toaster position="bottom-right" />;
 }

@@ -1,4 +1,8 @@
+import { Heart } from 'lucide-react';
 import { formatINR } from '../../utils/format';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export function ProductCard({
     product,
@@ -8,8 +12,8 @@ export function ProductCard({
     onToggleWishlist
 }) {
     return (
-        <div
-            className="product-card"
+        <Card
+            className="group cursor-pointer overflow-hidden pt-0 transition-all hover:border-foreground/50 hover:shadow-md"
             data-product-id={product.id}
             data-category={product.category}
             data-price={product.price}
@@ -17,7 +21,7 @@ export function ProductCard({
             role="group"
             aria-label={`View details for ${product.name}`}
             onClick={(e) => {
-                if (!e.target.closest('.add-to-cart') && !e.target.closest('.add-to-wishlist')) {
+                if (!e.target.closest('button')) {
                     onSelectProduct(product);
                 }
             }}
@@ -28,36 +32,49 @@ export function ProductCard({
                 }
             }}
         >
-            <div className="product-image">
-                <img src={product.image} alt={product.name} />
+            <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                <img
+                    src={product.image}
+                    alt={product.name}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
             </div>
-            <div className="product-info">
-                <span className="product-category">{product.brand}</span>
-                <h3>{product.name}</h3>
-                <p className="product-price">{formatINR(product.price)}</p>
-                <div className="product-buttons">
-                    <button
-                        className="add-to-cart"
-                        type="button"
-                        onClick={() => onAddToCart(product.id)}
-                    >
-                        Add to Cart
-                    </button>
-                    <button
-                        className={`add-to-wishlist${wishlisted ? ' active' : ''}`}
-                        type="button"
-                        title={wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                        aria-pressed={wishlisted}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onToggleWishlist(product.id);
-                        }}
-                    >
-                        {wishlisted ? '♥' : '♡'}
-                    </button>
+
+            <CardContent className="flex flex-col gap-1.5 pt-4">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                        {product.brand}
+                    </span>
+                    {product.isFeatured && <Badge variant="secondary">Featured</Badge>}
                 </div>
-            </div>
-        </div>
+                <h3 className="truncate text-base font-semibold text-foreground">{product.name}</h3>
+                <p className="text-lg font-bold text-foreground">{formatINR(product.price)}</p>
+            </CardContent>
+
+            <CardFooter className="gap-2 pt-0">
+                <Button
+                    type="button"
+                    className="flex-1 rounded-full"
+                    onClick={() => onAddToCart(product.id)}
+                >
+                    Add to Cart
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    title={wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                    aria-pressed={wishlisted}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onToggleWishlist(product.id);
+                    }}
+                >
+                    <Heart className={wishlisted ? 'fill-red-500 text-red-500' : ''} />
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }

@@ -1,5 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
+import { X, Lock } from 'lucide-react';
 import { MAX_QTY, formatINR } from '../../utils/format';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/components/ui/table';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog';
 
 export function Cart({
     cart,
@@ -43,199 +65,226 @@ export function Cart({
 
     return (
         <>
-            <section className="cart-section container" id="cart">
-                <h2 className="cart-heading">Shopping Cart</h2>
-                <div className="cart-container">
-                    <div className="cart-header">
-                        <span>Item</span>
-                        <span>Price</span>
-                        <span>Quantity</span>
-                        <span>Total</span>
-                        <span>Remove</span>
-                    </div>
-                    <div className="cart-items" id="cart-items">
-                        {entries.map(([id, quantity]) => {
-                            const product = productMap.get(id);
-                            return (
-                                <div className="cart-item" key={id} data-product-id={id}>
-                                    <div className="cart-product">
-                                        <img src={product.image} alt={product.name} />
-                                        <div className="cart-product-details">
-                                            <h3>{product.name}</h3>
-                                            <p>{product.brand}</p>
-                                        </div>
-                                    </div>
-                                    <div className="cart-price">{formatINR(product.price)}</div>
-                                    <div className="cart-quantity">
-                                        <input
-                                            type="number"
-                                            value={quantity}
-                                            min={1}
-                                            max={MAX_QTY}
-                                            aria-label="Product quantity"
-                                            onChange={(e) => onUpdateQuantity(id, e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="cart-total">{formatINR(product.price * quantity)}</div>
-                                    <div className="cart-remove">
-                                        <button
-                                            type="button"
-                                            data-action="remove"
-                                            onClick={() => onRemoveFromCart(id)}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="cart-summary" id="cart-summary" hidden={entries.length === 0}>
-                        <button
-                            className="checkout-button"
-                            id="checkout-button"
-                            type="button"
-                            onClick={onOpenCheckout}
-                        >
-                            Checkout →
-                        </button>
-                        <div className="cart-grand-total">
-                            <span>Grand Total:</span>
-                            <strong id="cart-grand-total">{formatINR(cartTotal)}</strong>
-                        </div>
-                    </div>
-                </div>
+            <section className="container py-14" id="cart">
+                <h2 className="mb-8 text-3xl font-bold tracking-tight uppercase">Shopping Cart</h2>
+
+                <Card>
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Quantity</TableHead>
+                                    <TableHead>Total</TableHead>
+                                    <TableHead className="text-right">Remove</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody id="cart-items">
+                                {entries.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                                            Your cart is currently empty.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    entries.map(([id, quantity]) => {
+                                        const product = productMap.get(id);
+                                        return (
+                                            <TableRow key={id} data-product-id={id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-4">
+                                                        <img
+                                                            src={product.image}
+                                                            alt={product.name}
+                                                            className="size-16 rounded-md bg-muted object-contain"
+                                                        />
+                                                        <div>
+                                                            <h3 className="font-semibold text-foreground">{product.name}</h3>
+                                                            <p className="text-xs text-muted-foreground">{product.brand}</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {formatINR(product.price)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Input
+                                                        type="number"
+                                                        value={quantity}
+                                                        min={1}
+                                                        max={MAX_QTY}
+                                                        aria-label="Product quantity"
+                                                        className="w-20 text-center"
+                                                        onChange={(e) => onUpdateQuantity(id, e.target.value)}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="font-semibold">
+                                                    {formatINR(product.price * quantity)}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        data-action="remove"
+                                                        aria-label="Remove item"
+                                                        onClick={() => onRemoveFromCart(id)}
+                                                    >
+                                                        <X />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+
+                    {entries.length > 0 && (
+                        <CardFooter className="flex flex-wrap items-center justify-end gap-6 border-t py-5" id="cart-summary">
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-muted-foreground">Grand Total:</span>
+                                <strong id="cart-grand-total" className="text-xl font-bold">
+                                    {formatINR(cartTotal)}
+                                </strong>
+                            </div>
+                            <Button
+                                type="button"
+                                id="checkout-button"
+                                size="lg"
+                                onClick={onOpenCheckout}
+                            >
+                                Checkout →
+                            </Button>
+                        </CardFooter>
+                    )}
+                </Card>
             </section>
 
             {/* Checkout Modal */}
-            <div
-                className={`checkout-overlay${isCheckoutOpen ? ' active' : ''}`}
-                id="checkout-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="checkout-title"
-                aria-hidden={String(!isCheckoutOpen)}
-                onClick={(e) => {
-                    if (e.target === e.currentTarget) onCloseCheckout();
+            <Dialog
+                open={isCheckoutOpen}
+                onOpenChange={(open) => {
+                    if (!open) onCloseCheckout();
                 }}
             >
-                <div className="checkout-modal">
-                    <div className="checkout-header">
-                        <div>
-                            <h2 id="checkout-title">Checkout</h2>
-                            <p>Review your order before placing it.</p>
-                        </div>
-                        <button
-                            className="close-checkout"
-                            id="close-checkout"
-                            type="button"
-                            onClick={onCloseCheckout}
-                        >
-                            ×
-                        </button>
-                    </div>
-                    <div className="checkout-content">
-                        <div className="checkout-order">
-                            <h3>Order Summary</h3>
-                            <div className="checkout-products" id="checkout-products">
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl" id="checkout-modal">
+                    <DialogHeader>
+                        <DialogTitle id="checkout-title" className="text-2xl">Checkout</DialogTitle>
+                        <DialogDescription>Review your order before placing it.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid grid-cols-1 gap-6 pt-2 md:grid-cols-2">
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-base font-semibold">Order Summary</h3>
+                            <div className="flex flex-col divide-y" id="checkout-products">
                                 {entries.map(([id, quantity]) => {
                                     const product = productMap.get(id);
                                     return (
-                                        <div className="checkout-product" key={id}>
-                                            <img src={product.image} alt={product.name} />
-                                            <div className="checkout-product-info">
-                                                <h4>{product.name}</h4>
-                                                <p>{`${quantity} × ${formatINR(product.price)}`}</p>
+                                        <div className="flex items-center gap-3 py-3" key={id}>
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="size-12 rounded-md bg-muted object-contain"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="truncate text-sm font-semibold">{product.name}</h4>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {`${quantity} × ${formatINR(product.price)}`}
+                                                </p>
                                             </div>
-                                            <span className="checkout-product-price">
+                                            <span className="text-sm font-semibold">
                                                 {formatINR(product.price * quantity)}
                                             </span>
                                         </div>
                                     );
                                 })}
                             </div>
-                            <div className="checkout-total">
-                                <span>Grand Total</span>
-                                <strong id="checkout-total">{formatINR(cartTotal)}</strong>
+                            <Separator />
+                            <div className="flex items-center justify-between rounded-lg bg-muted p-3">
+                                <span className="text-sm font-medium">Grand Total</span>
+                                <strong id="checkout-total" className="text-lg text-red-600">
+                                    {formatINR(cartTotal)}
+                                </strong>
                             </div>
                         </div>
-                        <div className="checkout-details">
-                            <h3>Customer Information</h3>
-                            <div className="checkout-option">
-                                <div>
-                                    <h4>Delivery Address</h4>
-                                    <p>{address || 'Add your shipping address.'}</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    className="checkout-action"
-                                    onClick={onOpenAddress}
-                                >
-                                    {address ? 'Edit Address' : 'Add Address'}
-                                </button>
-                            </div>
-                            <button
+
+                        <div className="flex flex-col gap-4">
+                            <h3 className="text-base font-semibold">Customer Information</h3>
+                            <Card>
+                                <CardContent className="flex items-center justify-between gap-3 py-4">
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="text-sm font-semibold">Delivery Address</h4>
+                                        <p className="text-xs text-muted-foreground break-words">
+                                            {address || 'Add your shipping address.'}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={onOpenAddress}
+                                    >
+                                        {address ? 'Edit Address' : 'Add Address'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
+                            <Button
                                 type="button"
-                                className="place-order-btn"
+                                className="w-full"
+                                size="lg"
                                 disabled={isPlacing}
                                 onClick={onPlaceOrder}
                             >
                                 {isPlacing ? 'Placing Order...' : 'Place Order →'}
-                            </button>
-                            <p className="checkout-security">
-                                🔒 Your checkout information is protected.
+                            </Button>
+
+                            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                                <Lock className="size-3.5" />
+                                Your checkout information is protected.
                             </p>
                         </div>
                     </div>
-                </div>
-            </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Address Modal */}
-            <div
-                className={`checkout-overlay${isAddressOpen ? ' active' : ''}`}
-                id="address-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="address-title"
-                aria-hidden={String(!isAddressOpen)}
-                onClick={(e) => {
-                    if (e.target === e.currentTarget) onCloseAddress();
+            <Dialog
+                open={isAddressOpen}
+                onOpenChange={(open) => {
+                    if (!open) onCloseAddress();
                 }}
             >
-                <div className="checkout-modal address-modal">
-                    <div className="checkout-header">
-                        <div>
-                            <h2 id="address-title">Delivery Address</h2>
-                            <p>Enter the address for this order.</p>
+                <DialogContent className="sm:max-w-md" id="address-modal">
+                    <DialogHeader>
+                        <DialogTitle id="address-title">Delivery Address</DialogTitle>
+                        <DialogDescription>Enter the address for this order.</DialogDescription>
+                    </DialogHeader>
+
+                    <form id="address-form" onSubmit={handleAddressSubmit} className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="address-input">Address</Label>
+                            <Textarea
+                                ref={addressInputRef}
+                                id="address-input"
+                                rows={4}
+                                required
+                                value={addressDraft}
+                                onChange={(e) => {
+                                    e.target.setCustomValidity('');
+                                    setAddressDraft(e.target.value);
+                                }}
+                            />
                         </div>
-                        <button
-                            className="close-checkout"
-                            id="close-address"
-                            type="button"
-                            onClick={onCloseAddress}
-                        >
-                            ×
-                        </button>
-                    </div>
-                    <form id="address-form" onSubmit={handleAddressSubmit}>
-                        <label htmlFor="address-input">Address</label>
-                        <textarea
-                            ref={addressInputRef}
-                            id="address-input"
-                            rows={4}
-                            required
-                            value={addressDraft}
-                            onChange={(e) => {
-                                e.target.setCustomValidity('');
-                                setAddressDraft(e.target.value);
-                            }}
-                        />
-                        <button className="place-order-btn" type="submit">
+                        <Button type="submit" className="w-full">
                             Save Address
-                        </button>
+                        </Button>
                     </form>
-                </div>
-            </div>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
