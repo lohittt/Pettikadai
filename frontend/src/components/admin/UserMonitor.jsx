@@ -56,7 +56,13 @@ export function UserMonitor() {
                                         <TableCell className="font-medium">{u.name}</TableCell>
                                         <TableCell>{u.email}</TableCell>
                                         <TableCell>
-                                            <Badge variant={u.role === 'admin' ? 'default' : 'secondary'} className="uppercase">
+                                            <Badge
+                                                className={`rounded-full uppercase ${
+                                                    u.role === 'admin'
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'border border-border bg-surface-container text-foreground'
+                                                }`}
+                                            >
                                                 {u.role}
                                             </Badge>
                                         </TableCell>

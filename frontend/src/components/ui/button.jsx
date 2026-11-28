@@ -43,11 +43,16 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  nativeButton,
+  render,
   ...props
 }) {
+  const isNonNativeRender = Boolean(render && render.type !== "button")
   return (
     <ButtonPrimitive
       data-slot="button"
+      render={render}
+      nativeButton={nativeButton ?? !isNonNativeRender}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

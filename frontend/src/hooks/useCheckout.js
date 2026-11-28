@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { formatINR, STORAGE_KEYS } from '../utils/format';
+import { formatINR, ADDRESS_STORAGE_KEY } from '../utils/format';
 import { validateAddress as validateAddressService, sanitizeInput } from '../services/validation';
 
 function getAddressKey(userId) {
-    return `${STORAGE_KEYS.address}_${userId}`;
+    return `${ADDRESS_STORAGE_KEY}_${userId}`;
 }
 
 function readUserAddress(userId) {

@@ -52,7 +52,7 @@ export function WishlistPage({ wishlist, productMap, onRemove, onAddToCart }) {
                                 <h3 className="truncate text-base font-semibold">{product.name}</h3>
                                 <p className="text-lg font-bold">{formatINR(product.price)}</p>
                             </CardContent>
-                            <CardFooter className="gap-2 pt-0">
+                            <CardFooter className="gap-2 border-t-0 bg-transparent pt-2 pb-4">
                                 <Button
                                     type="button"
                                     className="flex-1 rounded-full"

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 
 export function FeaturedProducts({
@@ -12,17 +14,24 @@ export function FeaturedProducts({
     }
 
     return (
-        <section className="container py-10" id="featured">
+        <section className="container py-12" id="featured">
             <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
-                    <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-                        Curated Picks
+                    <h2 className="font-headline text-3xl font-bold text-foreground">Featured Products</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Handpicked favourites from our counter
                     </p>
-                    <h2 className="text-3xl font-bold tracking-tight">Featured Products</h2>
                 </div>
+                <Link
+                    to="/products"
+                    className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-secondary hover:underline whitespace-nowrap"
+                >
+                    <span>View all</span>
+                    <ArrowRight className="size-4" />
+                </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {products.map((product) => (
                     <ProductCard
                         key={product.id}

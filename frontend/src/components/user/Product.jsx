@@ -49,7 +49,9 @@ export function Product({
                         <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
                             Our Collection
                         </p>
-                        <h2 className="text-3xl font-bold tracking-tight">Explore Products</h2>
+                        <h2 className="font-headline text-3xl font-bold tracking-tight text-foreground">
+                            Explore Products
+                        </h2>
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -59,13 +61,13 @@ export function Product({
                             placeholder="Search products..."
                             value={search}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="sm:w-56"
+                            className="bg-card sm:w-56"
                         />
                         <Select value={sort} onValueChange={onSortChange}>
-                            <SelectTrigger id="sort-select" aria-label="Sort products" className="w-full sm:w-48">
+                            <SelectTrigger id="sort-select" aria-label="Sort products" className="w-full bg-card sm:w-48">
                                 <SelectValue>{SORT_LABELS[sort] || 'Sort By'}</SelectValue>
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-popover">
                                 <SelectGroup>
                                     <SelectItem value="default">Sort By</SelectItem>
                                     <SelectItem value="low-high">Price: Low to High</SelectItem>
@@ -83,6 +85,7 @@ export function Product({
                             key={cat}
                             type="button"
                             variant={category === cat ? 'default' : 'outline'}
+                            className={`rounded-full ${category === cat ? '' : 'bg-card hover:bg-surface-container'}`}
                             data-category={cat}
                             onClick={() => onCategoryChange(cat)}
                         >
@@ -91,7 +94,7 @@ export function Product({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4" id="product-grid">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4" id="product-grid">
                     {products.map((product) => (
                         <ProductCard
                             key={product.id}
@@ -111,10 +114,10 @@ export function Product({
                     if (!open) onSelectProduct(null);
                 }}
             >
-                <DialogContent className="sm:max-w-2xl" id="product-detail-modal">
+                <DialogContent className="bg-card sm:max-w-2xl" id="product-detail-modal">
                     {selectedProduct && (
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:items-center">
-                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                            <div className="aspect-square overflow-hidden rounded-xl border border-border bg-surface-container">
                                 <img
                                     id="product-detail-image"
                                     src={selectedProduct.image}
@@ -124,14 +127,20 @@ export function Product({
                             </div>
                             <div className="flex flex-col gap-3">
                                 <DialogHeader>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="outline" className="rounded-full bg-background">
                                             {selectedProduct.brand} · {selectedProduct.category}
-                                        </span>
-                                        {selectedProduct.isFeatured && <Badge variant="secondary">Featured</Badge>}
+                                        </Badge>
+                                        {selectedProduct.isFeatured && (
+                                            <Badge className="rounded-full bg-accent text-accent-foreground">
+                                                Featured
+                                            </Badge>
+                                        )}
                                     </div>
-                                    <DialogTitle className="text-2xl">{selectedProduct.name}</DialogTitle>
-                                    <p className="text-2xl font-bold text-red-600">
+                                    <DialogTitle className="font-headline text-2xl">
+                                        {selectedProduct.name}
+                                    </DialogTitle>
+                                    <p className="text-2xl font-bold text-destructive tabular-nums">
                                         {formatINR(selectedProduct.price)}
                                     </p>
                                     <DialogDescription className="text-sm leading-relaxed">
@@ -141,7 +150,7 @@ export function Product({
                                 </DialogHeader>
                                 <Button
                                     type="button"
-                                    className="mt-2 w-full rounded-full"
+                                    className="mt-2 w-full rounded-full hover:bg-secondary"
                                     onClick={() => {
                                         onAddToCart(selectedProduct.id);
                                         onSelectProduct(null);

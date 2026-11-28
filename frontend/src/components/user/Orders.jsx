@@ -15,12 +15,12 @@ const STATUS_LABELS = {
     cancelled: 'Cancelled'
 };
 
-const STATUS_VARIANTS = {
-    pending: 'outline',
-    confirmed: 'default',
-    shipped: 'secondary',
-    delivered: 'default',
-    cancelled: 'destructive'
+const STATUS_BADGE_CLASSES = {
+    pending: 'bg-primary-soft text-on-primary-soft',
+    confirmed: 'bg-primary text-primary-foreground',
+    shipped: 'bg-surface-container border border-border text-foreground',
+    delivered: 'bg-secondary text-secondary-foreground',
+    cancelled: 'bg-accent-soft text-on-accent-soft'
 };
 
 export function Orders({ orders, loading, fetchOrders }) {
@@ -78,7 +78,7 @@ export function Orders({ orders, loading, fetchOrders }) {
                                                 : 'Just now'}
                                         </p>
                                     </div>
-                                    <Badge variant={STATUS_VARIANTS[status] || 'secondary'}>
+                                    <Badge className={`rounded-full ${STATUS_BADGE_CLASSES[status] || ''}`}>
                                         {STATUS_LABELS[status] || status}
                                     </Badge>
                                 </CardHeader>

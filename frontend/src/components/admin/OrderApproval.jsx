@@ -17,12 +17,12 @@ import {
 
 const ORDER_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
-const STATUS_VARIANTS = {
-    pending: 'outline',
-    confirmed: 'default',
-    shipped: 'secondary',
-    delivered: 'default',
-    cancelled: 'destructive'
+const STATUS_BADGE_CLASSES = {
+    pending: 'bg-primary-soft text-on-primary-soft',
+    confirmed: 'bg-primary text-primary-foreground',
+    shipped: 'bg-surface-container border border-border text-foreground',
+    delivered: 'bg-secondary text-secondary-foreground',
+    cancelled: 'bg-accent-soft text-on-accent-soft'
 };
 
 export function OrderApproval({ notify }) {
@@ -97,7 +97,7 @@ export function OrderApproval({ notify }) {
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant={STATUS_VARIANTS[order.status] || 'secondary'} className="capitalize">
+                                    <Badge className={`rounded-full capitalize ${STATUS_BADGE_CLASSES[order.status] || ''}`}>
                                         {order.status}
                                     </Badge>
                                     <Select

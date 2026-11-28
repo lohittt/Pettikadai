@@ -1,14 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Outer heritage arch -->
+  <path d="M10 52V28C10 15.85 19.85 6 32 6C44.15 6 54 15.85 54 28V52" stroke="#4E270F" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="6" y1="53" x2="58" y2="53" stroke="#4E270F" stroke-width="2.5" stroke-linecap="round"/>
 
-    <rect width="100"
-          height="100"
-          rx="15"
-          fill="#F59E0B"/>
+  <!-- Wooden stall posts -->
+  <rect x="17" y="25" width="3" height="22" fill="#C97E34" stroke="#4E270F" stroke-width="1.5"/>
+  <rect x="44" y="25" width="3" height="22" fill="#C97E34" stroke="#4E270F" stroke-width="1.5"/>
 
-    <text x="50"
-          y="75"
-          font-size="75"
-          text-anchor="middle">🏪</text>
+  <!-- Golden-yellow tiled awning roof -->
+  <path d="M12 26L20 13H44L52 26H12Z" fill="#F5A623" stroke="#4E270F" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M23 13L19 26M32 13V26M41 13L45 26M15.5 19.5H48.5" stroke="#4E270F" stroke-width="1.6" stroke-linecap="round"/>
 
+  <!-- Hanging banana bunch -->
+  <path d="M18 27C15 29 14 33 16 36C18 37 21 35 22 32" fill="#F5A623" stroke="#4E270F" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M19 29C17 32 17 36 19 38C21 38 23 35 23 32" fill="#E89412" stroke="#4E270F" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- Glass snack jars -->
+  <rect x="24" y="34" width="7" height="11" rx="2" fill="#FFFDF7" stroke="#4E270F" stroke-width="1.6"/>
+  <rect x="25" y="32" width="5" height="2.2" rx="0.8" fill="#C97E34" stroke="#4E270F" stroke-width="1.2"/>
+  <circle cx="27.5" cy="39" r="1.4" fill="#E89412"/>
+  <circle cx="27.5" cy="42.5" r="1.4" fill="#E89412"/>
+
+  <rect x="33" y="34" width="7" height="11" rx="2" fill="#FFFDF7" stroke="#4E270F" stroke-width="1.6"/>
+  <rect x="34" y="32" width="5" height="2.2" rx="0.8" fill="#C97E34" stroke="#4E270F" stroke-width="1.2"/>
+  <path d="M35 38H38M35 41H38M35 43.5H38" stroke="#E89412" stroke-width="1.6" stroke-linecap="round"/>
+
+  <!-- Wooden counter -->
+  <rect x="14" y="46" width="36" height="6" rx="1.5" fill="#E09D4E" stroke="#4E270F" stroke-width="2"/>
 </svg>

@@ -66,18 +66,20 @@ export function Cart({
     return (
         <>
             <section className="container py-14" id="cart">
-                <h2 className="mb-8 text-3xl font-bold tracking-tight uppercase">Shopping Cart</h2>
+                <h2 className="mb-8 font-headline text-3xl font-bold tracking-tight text-foreground">
+                    Shopping Cart
+                </h2>
 
-                <Card>
+                <Card className="bg-card">
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Item</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Quantity</TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead className="text-right">Remove</TableHead>
+                                    <TableHead className="w-28">Price</TableHead>
+                                    <TableHead className="w-28">Quantity</TableHead>
+                                    <TableHead className="w-32">Total</TableHead>
+                                    <TableHead className="w-24 text-center">Remove</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody id="cart-items">
@@ -122,7 +124,7 @@ export function Cart({
                                                 <TableCell className="font-semibold">
                                                     {formatINR(product.price * quantity)}
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="text-center">
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
@@ -146,7 +148,7 @@ export function Cart({
                         <CardFooter className="flex flex-wrap items-center justify-end gap-6 border-t py-5" id="cart-summary">
                             <div className="flex items-center gap-3">
                                 <span className="text-sm text-muted-foreground">Grand Total:</span>
-                                <strong id="cart-grand-total" className="text-xl font-bold">
+                                <strong id="cart-grand-total" className="text-xl font-bold text-destructive tabular-nums">
                                     {formatINR(cartTotal)}
                                 </strong>
                             </div>
@@ -154,6 +156,7 @@ export function Cart({
                                 type="button"
                                 id="checkout-button"
                                 size="lg"
+                                className="rounded-full px-6 hover:bg-secondary"
                                 onClick={onOpenCheckout}
                             >
                                 Checkout →
